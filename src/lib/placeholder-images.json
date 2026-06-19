@@ -1,3 +1,16 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-sports",
+      "description": "Sports activity background",
+      "imageUrl": "https://picsum.photos/seed/sports1/1200/400",
+      "imageHint": "soccer game"
+    },
+    {
+      "id": "team-spirit",
+      "description": "Players gathering",
+      "imageUrl": "https://picsum.photos/seed/team2/800/600",
+      "imageHint": "sports team"
+    }
+  ]
 }
