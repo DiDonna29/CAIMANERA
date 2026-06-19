@@ -1,6 +1,7 @@
 import CaimaneraRandomizer from '@/components/CaimaneraRandomizer';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Crown, Star } from 'lucide-react';
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-sports');
@@ -43,19 +44,27 @@ export default function Home() {
         <CaimaneraRandomizer />
       </div>
 
-      {/* Footer minimalista */}
-      <footer className="py-12 px-6 text-center">
+      {/* Footer minimalista con créditos */}
+      <footer className="py-12 px-6 text-center relative z-10">
         <div className="flex items-center justify-center gap-4 mb-4">
           <div className="h-px w-8 bg-border"></div>
           <Star className="h-4 w-4 text-accent fill-accent animate-pulse" />
           <div className="h-px w-8 bg-border"></div>
         </div>
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50 italic">
-          Powering amateur matches since {new Date().getFullYear()}
-        </p>
+        <div className="space-y-2">
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50 italic">
+            Powering amateur matches since {new Date().getFullYear()}
+          </p>
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-[11px] font-black text-primary/80 uppercase tracking-tighter italic">
+              Desarrollado por <span className="text-foreground">John Di Donna</span>
+            </p>
+            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-[0.3em] opacity-40">
+              © All Rights Reserved
+            </p>
+          </div>
+        </div>
       </footer>
     </main>
   );
 }
-
-import { Crown, Star } from 'lucide-react';
