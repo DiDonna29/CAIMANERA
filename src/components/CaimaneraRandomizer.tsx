@@ -163,6 +163,7 @@ export default function CaimaneraRandomizer() {
       const dataUrl = await toPng(resultsRef.current, {
         cacheBust: true,
         backgroundColor: '#f8fafc',
+        skipFonts: true, // Evita errores de seguridad con fuentes cross-origin
         style: {
           padding: '20px',
         }
@@ -177,10 +178,11 @@ export default function CaimaneraRandomizer() {
         description: "Se ha descargado la captura de tus equipos.",
       });
     } catch (err) {
+      console.error(err);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudo generar la imagen.",
+        description: "No se pudo generar la imagen. Intenta copiar la lista.",
       });
     } finally {
       setIsDownloading(false);
