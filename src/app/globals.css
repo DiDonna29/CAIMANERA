@@ -93,3 +93,17 @@
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
   animation: shine 3s infinite;
 }
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
