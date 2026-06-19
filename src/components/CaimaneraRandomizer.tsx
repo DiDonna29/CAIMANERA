@@ -17,7 +17,8 @@ import {
   Timer,
   Sun,
   Moon,
-  Zap
+  Zap,
+  Crown
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toPng } from 'html-to-image';
@@ -45,6 +46,16 @@ const FORMATS = [
   { id: '7', label: 'Fútbol 7', sub: '7v7', icon: <Users className="h-6 w-6" /> },
   { id: '11', label: 'Fútbol 11', sub: '11v11', icon: <Users className="h-7 w-7" /> },
 ];
+
+// Algoritmo Fisher-Yates para aleatoriedad real
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+};
 
 export default function CaimaneraRandomizer() {
   const { toast } = useToast();
@@ -91,10 +102,11 @@ export default function CaimaneraRandomizer() {
     setCurrentStep('results');
 
     try {
-      // Simular proceso de sorteo "pro"
+      // Simular procesamiento visual
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const shuffled = [...players].sort(() => Math.random() - 0.5);
+      // Barajar jugadores
+      const shuffled = shuffleArray(players);
       
       const teams: Team[] = [];
       for (let i = 0; i < numTeams; i++) {
@@ -114,15 +126,12 @@ export default function CaimaneraRandomizer() {
       setGeneratedTeams(teams);
 
       if (teams.length >= 2) {
-        const indices = Array.from({ length: teams.length }, (_, i) => i);
-        const shuffledIndices = indices.sort(() => Math.random() - 0.5);
+        // Seleccionar equipos para el partido estelar aleatoriamente
+        const shuffledTeams = shuffleArray(teams);
+        const teamA = shuffledTeams[0].name;
+        const teamB = shuffledTeams[1].name;
         
-        const indexA = shuffledIndices[0];
-        const indexB = shuffledIndices[1];
-        const teamA = teams[indexA].name;
-        const teamB = teams[indexB].name;
-        
-        const waitingTeam = teams.length > 2 ? teams[shuffledIndices[2]].name : null;
+        const waitingTeam = shuffledTeams.length > 2 ? shuffledTeams[2].name : null;
         const kickoffTeam = Math.random() > 0.5 ? teamA : teamB;
 
         setMatchDetails({
@@ -144,8 +153,7 @@ export default function CaimaneraRandomizer() {
       const dataUrl = await toPng(resultsRef.current, {
         cacheBust: true,
         backgroundColor: '#0a192f',
-        style: { padding: '0', borderRadius: '0' },
-        skipFonts: true
+        style: { padding: '0', borderRadius: '0' }
       });
       const link = document.createElement('a');
       link.download = `Caimanera_Elite_${new Date().getTime()}.png`;
