@@ -2,15 +2,15 @@
   "placeholderImages": [
     {
       "id": "hero-sports",
-      "description": "Sports activity background",
-      "imageUrl": "https://picsum.photos/seed/sports1/1200/400",
-      "imageHint": "soccer game"
+      "description": "Stadium lights background",
+      "imageUrl": "https://picsum.photos/seed/stadium-champions/1200/400",
+      "imageHint": "soccer stadium"
     },
     {
       "id": "team-spirit",
-      "description": "Players gathering",
-      "imageUrl": "https://picsum.photos/seed/team2/800/600",
-      "imageHint": "sports team"
+      "description": "Professional match atmosphere",
+      "imageUrl": "https://picsum.photos/seed/elite-match/800/600",
+      "imageHint": "football match"
     }
   ]
 }

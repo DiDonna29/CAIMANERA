@@ -19,11 +19,15 @@ import {
   Timer,
   LayoutGrid,
   Image as ImageIcon,
-  Share2
+  Share2,
+  Zap,
+  Star,
+  ShieldCheck
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toPng } from 'html-to-image';
+import { cn } from '@/lib/utils';
 
 type Team = {
   id: number;
@@ -162,28 +166,28 @@ export default function CaimaneraRandomizer() {
     try {
       const dataUrl = await toPng(resultsRef.current, {
         cacheBust: true,
-        backgroundColor: '#ffffff',
-        skipFonts: true,
+        backgroundColor: '#0a192f',
+        skipFonts: true, // Evita errores de seguridad con fuentes externas
         style: {
-          padding: '24px',
-          borderRadius: '16px'
+          padding: '0',
+          borderRadius: '0'
         }
       });
       const link = document.createElement('a');
-      link.download = `Caimanera_Equipos_${new Date().getTime()}.png`;
+      link.download = `Sorteo_Caimanera_${new Date().getTime()}.png`;
       link.href = dataUrl;
       link.click();
       
       toast({
-        title: "¡Imagen lista!",
-        description: "Se ha descargado la tarjeta de tus equipos.",
+        title: "¡Tarjeta lista!",
+        description: "Imagen descargada exitosamente.",
       });
     } catch (err) {
       console.error(err);
       toast({
         variant: "destructive",
-        title: "Error de descarga",
-        description: "No se pudo generar la imagen. Prueba copiando el texto.",
+        title: "Error",
+        description: "No se pudo generar la imagen.",
       });
     } finally {
       setIsDownloading(false);
@@ -193,55 +197,60 @@ export default function CaimaneraRandomizer() {
   const playerCount = rosterText.split('\n').filter(p => p.trim() !== "").length;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-10">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-primary font-headline flex items-center justify-center gap-3">
-          <Dices className="h-10 w-10 md:h-14 md:w-14 text-accent" />
-          CAIMANERA <span className="text-accent italic">RANDOM</span>
+    <div className="max-w-7xl mx-auto px-4 py-12 space-y-12">
+      {/* Hero Section */}
+      <div className="text-center space-y-4 animate-in fade-in zoom-in duration-700">
+        <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 px-4 py-1 rounded-full text-primary text-xs font-black tracking-widest uppercase">
+          <Star className="h-3 w-3 fill-primary" />
+          Elite Matchmaking Engine
+          <Star className="h-3 w-3 fill-primary" />
+        </div>
+        <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white font-headline leading-none">
+          CAIMANERA<br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-pulse italic">RANDOMIZER</span>
         </h1>
-        <p className="text-muted-foreground text-sm md:text-lg max-w-xl mx-auto opacity-80">
-          La forma más justa de organizar tu pichanga. Sin dramas, solo fútbol.
+        <p className="text-muted-foreground text-base md:text-xl max-w-2xl mx-auto font-medium opacity-70">
+          Transforma tu pichanga en un evento de clase mundial.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Panel de Configuración */}
-        <div className="lg:col-span-5 space-y-6">
-          <Card className="shadow-2xl border-primary/10 border-t-4 border-t-primary">
-            <CardHeader className="bg-muted/30 pb-4">
-              <div className="text-lg font-bold flex items-center gap-2 uppercase tracking-tight">
-                <LayoutGrid className="h-5 w-5 text-primary" />
-                Configurar Partido
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 items-start">
+        {/* Configuration Panel */}
+        <div className="xl:col-span-4 space-y-6">
+          <Card className="shadow-2xl border-white/5 bg-white/5 backdrop-blur-xl">
+            <CardHeader className="border-b border-white/5">
+              <div className="text-sm font-black flex items-center gap-2 uppercase tracking-tighter text-primary">
+                <Zap className="h-4 w-4 fill-primary" />
+                Configuración del Torneo
               </div>
             </CardHeader>
-            <CardContent className="space-y-6 pt-6">
+            <CardContent className="space-y-8 pt-8">
               <div className="space-y-3">
-                <Label htmlFor="game-mode" className="text-xs font-bold uppercase text-muted-foreground">Formato de Juego</Label>
+                <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Modalidad</Label>
                 <Select value={playersPerTeam} onValueChange={setPlayersPerTeam}>
-                  <SelectTrigger id="game-mode" className="h-12 border-primary/20">
+                  <SelectTrigger className="h-14 bg-white/5 border-white/10 text-lg font-bold">
                     <SelectValue placeholder="Formato" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="2">2 vs 2</SelectItem>
                     <SelectItem value="3">3 vs 3</SelectItem>
-                    <SelectItem value="5">5 vs 5 (Sala)</SelectItem>
-                    <SelectItem value="7">7 vs 7 (Sintética)</SelectItem>
-                    <SelectItem value="11">11 vs 11 (Cancha)</SelectItem>
+                    <SelectItem value="5">5 vs 5</SelectItem>
+                    <SelectItem value="7">7 vs 7</SelectItem>
+                    <SelectItem value="11">11 vs 11</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-3">
-                <Label htmlFor="roster" className="flex justify-between text-xs font-bold uppercase text-muted-foreground">
-                  Lista de Jugadores
-                  <Badge variant="secondary" className="font-mono">
-                    {playerCount} {playerCount === 1 ? 'Nombre' : 'Nombres'}
+                <div className="flex justify-between items-end">
+                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Plantilla de Jugadores</Label>
+                  <Badge variant="outline" className="text-[10px] font-mono border-primary text-primary">
+                    {playerCount} REGISTRADOS
                   </Badge>
-                </Label>
+                </div>
                 <Textarea 
-                  id="roster" 
-                  placeholder="Ejemplo:&#10;Lionel Messi&#10;Cristiano Ronaldo&#10;Neymar Jr..." 
-                  className="min-h-[250px] resize-none text-base border-primary/20 focus:ring-accent"
+                  placeholder="Lionel Messi&#10;Kylian Mbappé&#10;Vini Jr..." 
+                  className="min-h-[300px] bg-white/5 border-white/10 text-base font-medium focus:ring-accent resize-none placeholder:opacity-20"
                   value={rosterText}
                   onChange={(e) => setRosterText(e.target.value)}
                 />
@@ -250,167 +259,191 @@ export default function CaimaneraRandomizer() {
               <Button 
                 onClick={handleGenerate} 
                 disabled={isGenerating || playerCount < 2} 
-                className="w-full h-14 bg-primary hover:bg-primary/90 text-white text-xl font-black shadow-lg transition-transform hover:scale-[1.02] active:scale-95"
+                className={cn(
+                  "w-full h-16 bg-primary hover:bg-primary/90 text-white text-xl font-black italic tracking-tighter transition-all hover:scale-[1.01] active:scale-95 shadow-[0_0_30px_rgba(59,130,246,0.3)]",
+                  isGenerating && "animate-pulse"
+                )}
               >
                 {isGenerating ? (
-                  <>
-                    <RotateCw className="mr-3 h-6 w-6 animate-spin" />
-                    SORTEANDO...
-                  </>
+                  <RotateCw className="mr-3 h-6 w-6 animate-spin" />
                 ) : (
-                  <>
-                    <RotateCw className="mr-3 h-6 w-6" />
-                    ¡REPARTIR EQUIPOS!
-                  </>
+                  "INICIAR SORTEO ELITE"
                 )}
               </Button>
             </CardContent>
           </Card>
-
-          {playerCount > 0 && (
-            <Alert className="bg-primary/5 border-primary/20">
-              <Info className="h-4 w-4 text-primary" />
-              <AlertTitle className="text-primary font-bold text-xs">RESUMEN</AlertTitle>
-              <AlertDescription className="text-muted-foreground">
-                Se formarán {Math.ceil(playerCount / parseInt(playersPerTeam))} equipos de {playersPerTeam} jugadores.
-              </AlertDescription>
-            </Alert>
-          )}
         </div>
 
-        {/* Panel de Resultados */}
-        <div className="lg:col-span-7 space-y-6">
+        {/* Results Panel */}
+        <div className="xl:col-span-8 space-y-6">
           {isGenerating ? (
-            <Card className="min-h-[500px] flex flex-col items-center justify-center p-8 bg-muted/20 border-dashed border-2">
+            <Card className="min-h-[600px] flex flex-col items-center justify-center p-8 bg-black/40 border-dashed border-2 border-white/10">
               <div className="relative mb-8">
-                <div className="absolute -inset-4 bg-primary/20 blur-xl rounded-full animate-pulse"></div>
-                <Dices className="h-20 w-20 text-primary animate-bounce" />
+                <div className="absolute -inset-10 bg-primary/30 blur-[60px] rounded-full animate-pulse"></div>
+                <Trophy className="h-24 w-24 text-primary animate-bounce" />
               </div>
-              <h3 className="text-3xl font-black text-primary tracking-tighter uppercase italic">Barajando nombres...</h3>
+              <h3 className="text-4xl font-black text-white tracking-tighter uppercase italic animate-pulse">Procesando Formaciones...</h3>
             </Card>
           ) : generatedTeams.length > 0 ? (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-10 duration-500">
+            <div className="space-y-6 animate-in slide-in-from-bottom-10 duration-700">
               
-              <div className="flex flex-wrap items-center justify-between gap-4 px-2">
-                <h2 className="text-2xl font-black text-primary flex items-center gap-2 uppercase italic">
-                  <Trophy className="h-7 w-7 text-yellow-500" />
-                  Sorteo Final
-                </h2>
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-accent p-2 rounded-lg">
+                    <ShieldCheck className="h-6 w-6 text-accent-foreground" />
+                  </div>
+                  <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">
+                    Cuadro Final
+                  </h2>
+                </div>
                 <div className="flex gap-3">
                   <Button 
                     variant="outline" 
                     onClick={handleCopy} 
-                    className="gap-2 border-primary text-primary hover:bg-primary/5"
+                    className="gap-2 border-white/10 bg-white/5 text-white hover:bg-white/10 h-12 px-6"
                   >
                     {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
-                    {copied ? "COPIADO" : "COMPARTIR TEXTO"}
+                    TEXTO
                   </Button>
                   <Button 
                     onClick={handleDownloadImage} 
                     disabled={isDownloading}
-                    className="gap-2 bg-accent hover:bg-accent/90 text-white font-bold"
+                    className="gap-2 bg-primary hover:bg-primary/90 text-white font-black italic h-12 px-8 shadow-lg"
                   >
                     {isDownloading ? <RotateCw className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
-                    DESCARGAR TARJETA
+                    DESCARGAR POSTER
                   </Button>
                 </div>
               </div>
 
-              {/* Área que se captura como imagen */}
+              {/* Tournament Broadcast Card (Capture Area) */}
               <div 
                 ref={resultsRef} 
-                className="bg-white p-6 rounded-2xl shadow-xl border border-muted relative overflow-hidden"
-                style={{ minWidth: '320px' }}
+                className="champions-gradient p-1 rounded-3xl relative overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)]"
+                style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}
               >
-                {/* Branding en la imagen */}
-                <div className="flex items-center justify-between mb-8 pb-4 border-b-2 border-primary/10">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary p-2 rounded-lg">
-                      <Dices className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-black text-primary text-xl leading-none">CAIMANERA</h4>
-                      <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em]">Randomizer</p>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="border-primary text-primary font-bold">
-                    {new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  </Badge>
+                {/* Background Patterns for Capture */}
+                <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none">
+                  <div className="absolute top-0 right-0 w-96 h-96 bg-primary blur-[120px]"></div>
+                  <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent blur-[120px]"></div>
                 </div>
 
-                {matchDetails && (
-                  <div className="mb-8">
-                    <div className="relative bg-gradient-to-br from-primary to-primary/80 text-white p-6 rounded-2xl shadow-lg border-b-4 border-primary-foreground/20">
-                      <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <Swords className="h-20 w-20" />
+                <div className="relative bg-[#0a192f] p-8 md:p-12 rounded-[22px] border border-white/10">
+                  {/* Header Branding */}
+                  <div className="flex items-center justify-between mb-12">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white/5 border border-white/20 rounded-full flex items-center justify-center">
+                        <Star className="h-6 w-6 text-accent fill-accent" />
                       </div>
-                      
-                      <div className="flex items-center justify-center gap-6 md:gap-12 relative z-10">
-                        <div className="text-center flex-1">
-                          <span className="text-[10px] font-black opacity-60 uppercase mb-2 block tracking-widest">Local</span>
-                          <span className="text-xl md:text-2xl font-black leading-tight block">{matchDetails.teamA}</span>
-                        </div>
-                        
-                        <div className="flex flex-col items-center">
-                          <div className="bg-accent text-white font-black text-sm px-4 py-1 rounded-full border-2 border-white/20 shadow-lg">VS</div>
-                        </div>
-                        
-                        <div className="text-center flex-1">
-                          <span className="text-[10px] font-black opacity-60 uppercase mb-2 block tracking-widest">Visitante</span>
-                          <span className="text-xl md:text-2xl font-black leading-tight block">{matchDetails.teamB}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-6 flex justify-center gap-4 border-t border-white/10 pt-4">
-                        <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                          <Timer className="h-4 w-4 text-accent" />
-                          <span className="text-[11px] font-bold">Saque: <span className="text-accent">{matchDetails.kickoffTeam}</span></span>
-                        </div>
-                        {matchDetails.waitingTeam && (
-                          <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                            <RotateCw className="h-4 w-4 text-white/60" />
-                            <span className="text-[11px] font-bold">Espera: <span className="opacity-80">{matchDetails.waitingTeam}</span></span>
-                          </div>
-                        )}
+                      <div>
+                        <h4 className="font-black text-white text-2xl leading-none italic tracking-tighter">CAIMANERA ELITE</h4>
+                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">International Series</p>
                       </div>
                     </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Matchday</p>
+                      <p className="text-sm font-black text-white italic">
+                        {new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+                      </p>
+                    </div>
                   </div>
-                )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {generatedTeams.map((team) => (
-                    <div key={team.id} className="bg-muted/30 rounded-xl border border-muted-foreground/10 overflow-hidden">
-                      <div className="bg-muted-foreground/10 px-4 py-2.5 flex justify-between items-center">
-                        <span className="font-black text-sm text-primary uppercase">{team.name}</span>
-                        <Badge variant="outline" className="text-[10px] bg-white/50">{team.players.length} JUGS</Badge>
-                      </div>
-                      <div className="p-3 space-y-1.5">
-                        {team.players.map((player, pIdx) => (
-                          <div key={pIdx} className="flex items-center gap-3 p-2 rounded-lg bg-white shadow-sm border border-black/5">
-                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
-                              {pIdx + 1}
+                  {/* Feature Match Display */}
+                  {matchDetails && (
+                    <div className="mb-12 relative group">
+                      <div className="absolute -inset-1 bg-gradient-to-r from-primary via-accent to-primary rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+                      <div className="relative bg-black/60 backdrop-blur-3xl border border-white/10 rounded-2xl p-8 overflow-hidden">
+                        
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary px-4 py-1 rounded-b-lg">
+                          <span className="text-[10px] font-black text-white uppercase tracking-tighter italic">Main Event</span>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4 md:gap-8 relative z-10 pt-4">
+                          <div className="flex-1 text-center space-y-2">
+                            <div className="w-16 h-16 md:w-20 md:h-20 bg-white/5 border border-white/10 rounded-full mx-auto flex items-center justify-center shadow-2xl">
+                              <ShieldCheck className="h-8 w-8 md:h-10 md:w-10 text-primary" />
                             </div>
-                            <span className="font-semibold text-sm truncate">{player}</span>
+                            <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block truncate">
+                              {matchDetails.teamA}
+                            </span>
                           </div>
-                        ))}
+
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="text-4xl md:text-6xl font-black text-white italic opacity-20 select-none">VS</div>
+                            <div className="bg-accent text-accent-foreground font-black text-xs px-4 py-1 rounded-sm skew-x-[-12deg] shadow-lg">
+                              OFFICIAL
+                            </div>
+                          </div>
+
+                          <div className="flex-1 text-center space-y-2">
+                            <div className="w-16 h-16 md:w-20 md:h-20 bg-white/5 border border-white/10 rounded-full mx-auto flex items-center justify-center shadow-2xl">
+                              <ShieldCheck className="h-8 w-8 md:h-10 md:w-10 text-accent" />
+                            </div>
+                            <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block truncate">
+                              {matchDetails.teamB}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-8 flex flex-wrap justify-center gap-4 border-t border-white/5 pt-6">
+                          <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/5">
+                            <Timer className="h-4 w-4 text-accent" />
+                            <span className="text-[11px] font-black text-white uppercase tracking-tighter">
+                              Saque: <span className="text-accent">{matchDetails.kickoffTeam}</span>
+                            </span>
+                          </div>
+                          {matchDetails.waitingTeam && (
+                            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/5">
+                              <Zap className="h-4 w-4 text-primary" />
+                              <span className="text-[11px] font-black text-white/60 uppercase tracking-tighter">
+                                En Espera: <span className="text-white">{matchDetails.waitingTeam}</span>
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  )}
 
-                {/* Pie de imagen branding */}
-                <div className="mt-8 text-center pt-6 border-t border-dashed border-muted-foreground/20">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-50">
-                    Sorteado con Caimanera Randomizer
-                  </p>
+                  {/* Squads List */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {generatedTeams.map((team) => (
+                      <div key={team.id} className="champions-card rounded-2xl overflow-hidden group hover:border-primary/50 transition-colors">
+                        <div className="bg-white/5 px-6 py-3 flex justify-between items-center border-b border-white/5">
+                          <span className="font-black text-sm text-white italic uppercase tracking-tighter">{team.name}</span>
+                          <span className="text-[10px] font-bold text-primary">{team.players.length} PLAYERS</span>
+                        </div>
+                        <div className="p-4 space-y-2">
+                          {team.players.map((player, pIdx) => (
+                            <div key={pIdx} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5 group/player hover:bg-primary/10 transition-colors">
+                              <span className="text-xs font-black text-primary/50 italic w-4">{pIdx + 1}</span>
+                              <span className="font-black text-sm text-white/90 uppercase italic tracking-tighter truncate">{player}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Footer Branding */}
+                  <div className="mt-12 text-center pt-8 border-t border-dashed border-white/10">
+                    <div className="flex items-center justify-center gap-2 opacity-30">
+                      <Trophy className="h-4 w-4" />
+                      <p className="text-[9px] font-black text-white uppercase tracking-[0.6em]">
+                        CAIMANERA RANDOMIZER ELITE
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           ) : (
-            <Card className="h-full min-h-[400px] flex flex-col items-center justify-center p-12 text-center border-dashed border-2 opacity-40">
-              <Users className="h-20 w-20 mb-6 text-muted-foreground" />
-              <h3 className="text-2xl font-bold uppercase tracking-tighter">Sin equipos</h3>
-              <p className="max-w-xs mt-3 text-sm">Agrega los nombres en el panel de la izquierda y presiona el botón para comenzar el sorteo.</p>
+            <Card className="h-full min-h-[500px] flex flex-col items-center justify-center p-12 text-center border-dashed border-2 border-white/10 opacity-30">
+              <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6">
+                <Users className="h-12 w-12 text-white" />
+              </div>
+              <h3 className="text-3xl font-black uppercase tracking-tighter italic text-white">No hay sorteos activos</h3>
+              <p className="max-w-xs mt-3 text-sm font-medium">Prepara tu alineación a la izquierda y pulsa el botón para generar el bracket del torneo.</p>
             </Card>
           )}
         </div>

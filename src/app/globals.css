@@ -4,47 +4,26 @@
 
 @layer base {
   :root {
-    --background: 190 15% 96%;
-    --foreground: 190 70% 5%;
-    --card: 0 0% 100%;
-    --card-foreground: 190 70% 5%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 190 70% 5%;
-    --primary: 190 70% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 160 60% 40%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 190 10% 90%;
-    --muted-foreground: 190 10% 40%;
-    --accent: 160 60% 40%;
-    --accent-foreground: 0 0% 100%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 13%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 13%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 45 93% 47%;
+    --accent-foreground: 222 47% 11%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 190 15% 90%;
-    --input: 190 15% 90%;
-    --ring: 190 70% 45%;
-    --radius: 0.75rem;
-  }
-  .dark {
-    --background: 190 30% 5%;
-    --foreground: 190 15% 96%;
-    --card: 190 30% 7%;
-    --card-foreground: 190 15% 96%;
-    --popover: 190 30% 7%;
-    --popover-foreground: 190 15% 96%;
-    --primary: 190 70% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 160 60% 40%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 190 20% 15%;
-    --muted-foreground: 190 10% 65%;
-    --accent: 160 60% 40%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 190 20% 15%;
-    --input: 190 20% 15%;
-    --ring: 190 70% 45%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 224 76% 48%;
+    --radius: 0.5rem;
   }
 }
 
@@ -53,6 +32,44 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground font-body antialiased;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(217, 91%, 60%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(45, 93%, 47%, 0.1) 0px, transparent 50%);
   }
+}
+
+.champions-gradient {
+  background: linear-gradient(135deg, #0a192f 0%, #0d1b2a 100%);
+}
+
+.champions-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.match-glow {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+
+@keyframes shine {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+.animate-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shine 2s infinite;
 }
