@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -18,8 +18,8 @@ import {
   Swords,
   Timer,
   LayoutGrid,
-  Download,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Share2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -85,7 +85,7 @@ export default function CaimaneraRandomizer() {
         if (teamPlayers.length > 0) {
           teams.push({
             id: i + 1,
-            name: `Equipo ${i + 1}`,
+            name: `EQUIPO ${i + 1}`,
             players: teamPlayers
           });
         }
@@ -115,7 +115,7 @@ export default function CaimaneraRandomizer() {
 
       toast({
         title: "¡Equipos generados!",
-        description: `Se han creado ${teams.length} equipos.`,
+        description: `Se han creado ${teams.length} equipos listos para la acción.`,
       });
     } catch (error) {
       toast({
@@ -162,27 +162,28 @@ export default function CaimaneraRandomizer() {
     try {
       const dataUrl = await toPng(resultsRef.current, {
         cacheBust: true,
-        backgroundColor: '#f8fafc',
-        skipFonts: true, // Evita errores de seguridad con fuentes cross-origin
+        backgroundColor: '#ffffff',
+        skipFonts: true,
         style: {
-          padding: '20px',
+          padding: '24px',
+          borderRadius: '16px'
         }
       });
       const link = document.createElement('a');
-      link.download = `caimanera-${new Date().getTime()}.png`;
+      link.download = `Caimanera_Equipos_${new Date().getTime()}.png`;
       link.href = dataUrl;
       link.click();
       
       toast({
-        title: "Imagen guardada",
-        description: "Se ha descargado la captura de tus equipos.",
+        title: "¡Imagen lista!",
+        description: "Se ha descargado la tarjeta de tus equipos.",
       });
     } catch (err) {
       console.error(err);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudo generar la imagen. Intenta copiar la lista.",
+        title: "Error de descarga",
+        description: "No se pudo generar la imagen. Prueba copiando el texto.",
       });
     } finally {
       setIsDownloading(false);
@@ -192,211 +193,224 @@ export default function CaimaneraRandomizer() {
   const playerCount = rosterText.split('\n').filter(p => p.trim() !== "").length;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 md:py-10 space-y-6 md:space-y-10">
-      <div className="text-center space-y-3">
-        <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-primary font-headline flex items-center justify-center gap-2 md:gap-4">
-          <Dices className="h-8 w-8 md:h-12 md:w-12" />
-          CAIMANERA <span className="text-accent">RANDOM</span>
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-10">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-primary font-headline flex items-center justify-center gap-3">
+          <Dices className="h-10 w-10 md:h-14 md:w-14 text-accent" />
+          CAIMANERA <span className="text-accent italic">RANDOM</span>
         </h1>
-        <p className="text-muted-foreground text-sm md:text-xl max-w-2xl mx-auto px-4">
-          Arma tus equipos de forma justa y rápida. ¡Descarga y comparte!
+        <p className="text-muted-foreground text-sm md:text-lg max-w-xl mx-auto opacity-80">
+          La forma más justa de organizar tu pichanga. Sin dramas, solo fútbol.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-        <div className="lg:col-span-5 space-y-4 md:space-y-6">
-          <Card className="shadow-xl border-primary/10 overflow-hidden">
-            <CardHeader className="bg-primary/5 border-b pb-4">
-              <div className="text-xl font-bold flex items-center gap-2">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Panel de Configuración */}
+        <div className="lg:col-span-5 space-y-6">
+          <Card className="shadow-2xl border-primary/10 border-t-4 border-t-primary">
+            <CardHeader className="bg-muted/30 pb-4">
+              <div className="text-lg font-bold flex items-center gap-2 uppercase tracking-tight">
                 <LayoutGrid className="h-5 w-5 text-primary" />
-                Configuración
+                Configurar Partido
               </div>
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
               <div className="space-y-3">
-                <Label htmlFor="game-mode" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Formato</Label>
+                <Label htmlFor="game-mode" className="text-xs font-bold uppercase text-muted-foreground">Formato de Juego</Label>
                 <Select value={playersPerTeam} onValueChange={setPlayersPerTeam}>
-                  <SelectTrigger id="game-mode" className="h-12 text-base">
-                    <SelectValue placeholder="Elige formato" />
+                  <SelectTrigger id="game-mode" className="h-12 border-primary/20">
+                    <SelectValue placeholder="Formato" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="2">2v2 (Dúos)</SelectItem>
-                    <SelectItem value="3">3v3 (Tríos)</SelectItem>
-                    <SelectItem value="5">5v5 (Fútbol Sala)</SelectItem>
-                    <SelectItem value="7">7v7 (Fútbol 7)</SelectItem>
-                    <SelectItem value="11">11v11 (Fútbol 11)</SelectItem>
+                    <SelectItem value="2">2 vs 2</SelectItem>
+                    <SelectItem value="3">3 vs 3</SelectItem>
+                    <SelectItem value="5">5 vs 5 (Sala)</SelectItem>
+                    <SelectItem value="7">7 vs 7 (Sintética)</SelectItem>
+                    <SelectItem value="11">11 vs 11 (Cancha)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-3">
-                <Label htmlFor="roster" className="flex justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <Label htmlFor="roster" className="flex justify-between text-xs font-bold uppercase text-muted-foreground">
                   Lista de Jugadores
-                  <Badge variant="secondary" className="font-mono px-2 py-0">
-                    {playerCount} {playerCount === 1 ? 'LISTO' : 'LISTOS'}
+                  <Badge variant="secondary" className="font-mono">
+                    {playerCount} {playerCount === 1 ? 'Nombre' : 'Nombres'}
                   </Badge>
                 </Label>
                 <Textarea 
                   id="roster" 
-                  placeholder="Escribe o pega los nombres aquí (uno por línea)..." 
-                  className="min-h-[200px] md:min-h-[300px] resize-none text-base focus:ring-primary/40 border-primary/20"
+                  placeholder="Ejemplo:&#10;Lionel Messi&#10;Cristiano Ronaldo&#10;Neymar Jr..." 
+                  className="min-h-[250px] resize-none text-base border-primary/20 focus:ring-accent"
                   value={rosterText}
                   onChange={(e) => setRosterText(e.target.value)}
                 />
               </div>
-            </CardContent>
-            <CardFooter className="bg-muted/30 p-4">
+              
               <Button 
                 onClick={handleGenerate} 
                 disabled={isGenerating || playerCount < 2} 
-                className="w-full h-14 bg-primary hover:bg-primary/90 text-white text-lg font-black transition-all shadow-xl active:scale-[0.98]"
+                className="w-full h-14 bg-primary hover:bg-primary/90 text-white text-xl font-black shadow-lg transition-transform hover:scale-[1.02] active:scale-95"
               >
                 {isGenerating ? (
                   <>
-                    <RotateCw className="mr-2 h-6 w-6 animate-spin" />
+                    <RotateCw className="mr-3 h-6 w-6 animate-spin" />
                     SORTEANDO...
                   </>
                 ) : (
                   <>
-                    <RotateCw className="mr-2 h-6 w-6" />
-                    ¡ARMAR EQUIPOS!
+                    <RotateCw className="mr-3 h-6 w-6" />
+                    ¡REPARTIR EQUIPOS!
                   </>
                 )}
               </Button>
-            </CardFooter>
+            </CardContent>
           </Card>
 
           {playerCount > 0 && (
-            <Alert className="bg-secondary/5 border-secondary/20 shadow-sm">
-              <Info className="h-4 w-4 text-secondary" />
-              <AlertTitle className="text-secondary font-bold text-xs uppercase">Info</AlertTitle>
-              <AlertDescription className="text-muted-foreground text-sm">
-                Saldrán {Math.ceil(playerCount / parseInt(playersPerTeam))} equipos.
+            <Alert className="bg-primary/5 border-primary/20">
+              <Info className="h-4 w-4 text-primary" />
+              <AlertTitle className="text-primary font-bold text-xs">RESUMEN</AlertTitle>
+              <AlertDescription className="text-muted-foreground">
+                Se formarán {Math.ceil(playerCount / parseInt(playersPerTeam))} equipos de {playersPerTeam} jugadores.
               </AlertDescription>
             </Alert>
           )}
         </div>
 
+        {/* Panel de Resultados */}
         <div className="lg:col-span-7 space-y-6">
           {isGenerating ? (
-            <Card className="h-full min-h-[400px] md:min-h-[600px] flex flex-col items-center justify-center p-8 text-center border-dashed border-4 border-primary/20 bg-primary/5 rounded-2xl">
-              <div className="relative w-24 h-24 mb-6">
-                <div className="absolute inset-0 border-4 border-primary/10 rounded-full"></div>
-                <div className="absolute inset-0 border-4 border-t-primary rounded-full animate-spin"></div>
-                <Dices className="absolute inset-0 m-auto h-10 w-10 text-primary animate-bounce" />
+            <Card className="min-h-[500px] flex flex-col items-center justify-center p-8 bg-muted/20 border-dashed border-2">
+              <div className="relative mb-8">
+                <div className="absolute -inset-4 bg-primary/20 blur-xl rounded-full animate-pulse"></div>
+                <Dices className="h-20 w-20 text-primary animate-bounce" />
               </div>
-              <h3 className="text-2xl font-black text-primary animate-pulse uppercase">Repartiendo...</h3>
+              <h3 className="text-3xl font-black text-primary tracking-tighter uppercase italic">Barajando nombres...</h3>
             </Card>
           ) : generatedTeams.length > 0 ? (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-10 duration-500">
               
-              <div className="flex flex-wrap items-center justify-between gap-3 px-2">
-                <h2 className="text-xl md:text-2xl font-black text-primary flex items-center gap-2 uppercase">
-                  <Trophy className="h-6 w-6 text-yellow-500" />
-                  Resultados
+              <div className="flex flex-wrap items-center justify-between gap-4 px-2">
+                <h2 className="text-2xl font-black text-primary flex items-center gap-2 uppercase italic">
+                  <Trophy className="h-7 w-7 text-yellow-500" />
+                  Sorteo Final
                 </h2>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <Button 
                     variant="outline" 
-                    size="sm" 
                     onClick={handleCopy} 
-                    className="gap-2 border-primary/20 text-primary h-10 hover:bg-primary/5"
+                    className="gap-2 border-primary text-primary hover:bg-primary/5"
                   >
-                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    <span className="hidden sm:inline">{copied ? "COPIADO" : "COPIAR"}</span>
+                    {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+                    {copied ? "COPIADO" : "COMPARTIR TEXTO"}
                   </Button>
                   <Button 
-                    variant="outline" 
-                    size="sm" 
-                    disabled={isDownloading}
                     onClick={handleDownloadImage} 
-                    className="gap-2 border-accent/20 text-accent h-10 hover:bg-accent/5"
+                    disabled={isDownloading}
+                    className="gap-2 bg-accent hover:bg-accent/90 text-white font-bold"
                   >
                     {isDownloading ? <RotateCw className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
-                    <span className="hidden sm:inline">DESCARGAR</span>
+                    DESCARGAR TARJETA
                   </Button>
                 </div>
               </div>
 
-              <div ref={resultsRef} className="space-y-6 bg-slate-50 p-1 rounded-xl">
+              {/* Área que se captura como imagen */}
+              <div 
+                ref={resultsRef} 
+                className="bg-white p-6 rounded-2xl shadow-xl border border-muted relative overflow-hidden"
+                style={{ minWidth: '320px' }}
+              >
+                {/* Branding en la imagen */}
+                <div className="flex items-center justify-between mb-8 pb-4 border-b-2 border-primary/10">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-primary p-2 rounded-lg">
+                      <Dices className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-black text-primary text-xl leading-none">CAIMANERA</h4>
+                      <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em]">Randomizer</p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="border-primary text-primary font-bold">
+                    {new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </Badge>
+                </div>
+
                 {matchDetails && (
-                  <Card className="bg-accent/10 border-accent/20 shadow-lg overflow-hidden border-l-8 border-l-accent">
-                    <CardHeader className="pb-2">
-                      <div className="text-accent text-lg font-bold flex items-center gap-2 uppercase">
-                        <Swords className="h-5 w-5" />
-                        Primer Partido
+                  <div className="mb-8">
+                    <div className="relative bg-gradient-to-br from-primary to-primary/80 text-white p-6 rounded-2xl shadow-lg border-b-4 border-primary-foreground/20">
+                      <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <Swords className="h-20 w-20" />
                       </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between gap-4 p-4 bg-background/50 rounded-xl border border-accent/10">
+                      
+                      <div className="flex items-center justify-center gap-6 md:gap-12 relative z-10">
                         <div className="text-center flex-1">
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">Equipo A</span>
-                          <span className="text-lg font-black text-primary leading-tight">{matchDetails.teamA}</span>
+                          <span className="text-[10px] font-black opacity-60 uppercase mb-2 block tracking-widest">Local</span>
+                          <span className="text-xl md:text-2xl font-black leading-tight block">{matchDetails.teamA}</span>
                         </div>
+                        
                         <div className="flex flex-col items-center">
-                          <Badge variant="outline" className="text-accent border-accent/30 font-black px-3 py-0.5 text-xs">VS</Badge>
+                          <div className="bg-accent text-white font-black text-sm px-4 py-1 rounded-full border-2 border-white/20 shadow-lg">VS</div>
                         </div>
+                        
                         <div className="text-center flex-1">
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">Equipo B</span>
-                          <span className="text-lg font-black text-primary leading-tight">{matchDetails.teamB}</span>
+                          <span className="text-[10px] font-black opacity-60 uppercase mb-2 block tracking-widest">Visitante</span>
+                          <span className="text-xl md:text-2xl font-black leading-tight block">{matchDetails.teamB}</span>
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="flex items-center gap-2 bg-white/50 p-2 rounded-lg border">
+                      <div className="mt-6 flex justify-center gap-4 border-t border-white/10 pt-4">
+                        <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm">
                           <Timer className="h-4 w-4 text-accent" />
-                          <div>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase">Saque</p>
-                            <p className="font-bold text-xs">{matchDetails.kickoffTeam}</p>
-                          </div>
+                          <span className="text-[11px] font-bold">Saque: <span className="text-accent">{matchDetails.kickoffTeam}</span></span>
                         </div>
                         {matchDetails.waitingTeam && (
-                          <div className="flex items-center gap-2 bg-white/50 p-2 rounded-lg border">
-                            <RotateCw className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <p className="text-[10px] font-bold text-muted-foreground uppercase">Espera</p>
-                              <p className="font-bold text-xs">{matchDetails.waitingTeam}</p>
-                            </div>
+                          <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm">
+                            <RotateCw className="h-4 w-4 text-white/60" />
+                            <span className="text-[11px] font-bold">Espera: <span className="opacity-80">{matchDetails.waitingTeam}</span></span>
                           </div>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {generatedTeams.map((team) => (
-                    <Card key={team.id} className="overflow-hidden border-none shadow-xl">
-                      <div className="h-1.5 w-full bg-primary" />
-                      <CardHeader className="bg-primary/5 pb-2 pt-3">
-                        <div className="text-base font-black text-primary uppercase">
-                          {team.name}
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-3 px-3 pb-4 space-y-1">
+                    <div key={team.id} className="bg-muted/30 rounded-xl border border-muted-foreground/10 overflow-hidden">
+                      <div className="bg-muted-foreground/10 px-4 py-2.5 flex justify-between items-center">
+                        <span className="font-black text-sm text-primary uppercase">{team.name}</span>
+                        <Badge variant="outline" className="text-[10px] bg-white/50">{team.players.length} JUGS</Badge>
+                      </div>
+                      <div className="p-3 space-y-1.5">
                         {team.players.map((player, pIdx) => (
-                          <div key={pIdx} className="flex items-center gap-2.5 p-1.5 rounded-lg border border-transparent bg-background/40">
-                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[9px] font-black text-primary">
+                          <div key={pIdx} className="flex items-center gap-3 p-2 rounded-lg bg-white shadow-sm border border-black/5">
+                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
                               {pIdx + 1}
                             </div>
-                            <span className="font-bold text-sm">{player}</span>
+                            <span className="font-semibold text-sm truncate">{player}</span>
                           </div>
                         ))}
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   ))}
                 </div>
 
-                <div className="text-center py-4 sm:hidden">
-                  <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">Generado con Caimanera Randomizer</p>
+                {/* Pie de imagen branding */}
+                <div className="mt-8 text-center pt-6 border-t border-dashed border-muted-foreground/20">
+                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-50">
+                    Sorteado con Caimanera Randomizer
+                  </p>
                 </div>
               </div>
             </div>
           ) : (
-            <Card className="h-full min-h-[300px] md:min-h-[500px] flex flex-col items-center justify-center p-12 text-center border-dashed border-2 border-muted rounded-2xl opacity-50">
-              <Users className="h-16 w-16 mb-4 text-muted" />
-              <h3 className="text-xl font-bold uppercase">Sin equipos</h3>
-              <p className="max-w-xs mt-2 text-sm text-muted-foreground">Ingresa los nombres y dale al botón para repartir.</p>
+            <Card className="h-full min-h-[400px] flex flex-col items-center justify-center p-12 text-center border-dashed border-2 opacity-40">
+              <Users className="h-20 w-20 mb-6 text-muted-foreground" />
+              <h3 className="text-2xl font-bold uppercase tracking-tighter">Sin equipos</h3>
+              <p className="max-w-xs mt-3 text-sm">Agrega los nombres en el panel de la izquierda y presiona el botón para comenzar el sorteo.</p>
             </Card>
           )}
         </div>
