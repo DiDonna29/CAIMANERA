@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef } from 'react';
@@ -73,10 +72,8 @@ export default function CaimaneraRandomizer() {
     setMatchDetails(null);
 
     try {
-      // Simulate suspense delay
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Shuffle players
       const shuffled = [...players].sort(() => Math.random() - 0.5);
       
       const teams: Team[] = [];
@@ -96,7 +93,6 @@ export default function CaimaneraRandomizer() {
 
       setGeneratedTeams(teams);
 
-      // Calculate first match logic
       if (teams.length >= 2) {
         const indices = Array.from({ length: teams.length }, (_, i) => i);
         const shuffledIndices = indices.sort(() => Math.random() - 0.5);
@@ -122,7 +118,6 @@ export default function CaimaneraRandomizer() {
         description: `Se han creado ${teams.length} equipos.`,
       });
     } catch (error) {
-      console.error("Error generating teams:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -167,7 +162,7 @@ export default function CaimaneraRandomizer() {
     try {
       const dataUrl = await toPng(resultsRef.current, {
         cacheBust: true,
-        backgroundColor: '#f8fafc', // match background
+        backgroundColor: '#f8fafc',
         style: {
           padding: '20px',
         }
@@ -182,7 +177,6 @@ export default function CaimaneraRandomizer() {
         description: "Se ha descargado la captura de tus equipos.",
       });
     } catch (err) {
-      console.error('oops, something went wrong!', err);
       toast({
         variant: "destructive",
         title: "Error",
@@ -208,7 +202,6 @@ export default function CaimaneraRandomizer() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-        {/* Input Section */}
         <div className="lg:col-span-5 space-y-4 md:space-y-6">
           <Card className="shadow-xl border-primary/10 overflow-hidden">
             <CardHeader className="bg-primary/5 border-b pb-4">
@@ -282,7 +275,6 @@ export default function CaimaneraRandomizer() {
           )}
         </div>
 
-        {/* Results Section */}
         <div className="lg:col-span-7 space-y-6">
           {isGenerating ? (
             <Card className="h-full min-h-[400px] md:min-h-[600px] flex flex-col items-center justify-center p-8 text-center border-dashed border-4 border-primary/20 bg-primary/5 rounded-2xl">
@@ -324,10 +316,7 @@ export default function CaimaneraRandomizer() {
                 </div>
               </div>
 
-              {/* Wrapper for image capture */}
               <div ref={resultsRef} className="space-y-6 bg-slate-50 p-1 rounded-xl">
-                
-                {/* Match Card */}
                 {matchDetails && (
                   <Card className="bg-accent/10 border-accent/20 shadow-lg overflow-hidden border-l-8 border-l-accent">
                     <CardHeader className="pb-2">
@@ -373,7 +362,6 @@ export default function CaimaneraRandomizer() {
                   </Card>
                 )}
 
-                {/* Teams Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {generatedTeams.map((team) => (
                     <Card key={team.id} className="overflow-hidden border-none shadow-xl">
