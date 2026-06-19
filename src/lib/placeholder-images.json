@@ -2,15 +2,15 @@
   "placeholderImages": [
     {
       "id": "hero-sports",
-      "description": "Stadium lights background",
-      "imageUrl": "https://picsum.photos/seed/stadium-champions/1200/400",
-      "imageHint": "soccer stadium"
+      "description": "Epic stadium lights and football field at night",
+      "imageUrl": "https://picsum.photos/seed/caimanera-stadium-pro/1200/600",
+      "imageHint": "soccer field lights"
     },
     {
       "id": "team-spirit",
-      "description": "Professional match atmosphere",
-      "imageUrl": "https://picsum.photos/seed/elite-match/800/600",
-      "imageHint": "football match"
+      "description": "Golden football trophy with lens flare",
+      "imageUrl": "https://picsum.photos/seed/elite-match-final/800/600",
+      "imageHint": "football trophy"
     }
   ]
 }

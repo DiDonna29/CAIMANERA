@@ -6,50 +6,56 @@ export default function Home() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-sports');
 
   return (
-    <main className="min-h-screen">
-      {/* Hero Header Section */}
-      <div className="relative w-full h-[300px] overflow-hidden">
+    <main className="min-h-screen relative bg-background">
+      {/* Background Decorativo */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden opacity-10">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary blur-[150px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-accent blur-[150px] rounded-full"></div>
+      </div>
+
+      {/* Hero Visual para Móvil */}
+      <div className="relative w-full h-[200px] md:h-[350px] overflow-hidden">
         {heroImage && (
           <>
             <Image
               src={heroImage.imageUrl}
               alt={heroImage.description}
               fill
-              className="object-cover brightness-[0.3]"
+              className="object-cover brightness-[0.2]"
               priority
-              data-ai-hint={heroImage.imageHint}
+              data-ai-hint="soccer stadium lights"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-primary/20 to-background flex flex-col items-center justify-center text-white p-6">
-              <div className="w-20 h-2 bg-accent mb-6 rounded-full shadow-lg shadow-accent/50"></div>
-              <h1 className="text-5xl font-black font-headline tracking-tighter mb-2 drop-shadow-md">
-                CAIMANERA <span className="text-accent">RANDOMIZER</span>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background flex flex-col items-center justify-center p-6 text-center">
+              <div className="flex items-center gap-2 bg-primary/20 backdrop-blur-md px-4 py-1 rounded-full border border-primary/30 mb-4 animate-in fade-in slide-in-from-top-4 duration-1000">
+                <Crown className="h-3 w-3 text-accent" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-white italic">Elite Series Edition</span>
+              </div>
+              <h1 className="text-5xl md:text-8xl font-black italic tracking-tighter leading-none text-white drop-shadow-2xl">
+                CAIMANERA<br/><span className="text-primary text-glow">RANDOMIZER</span>
               </h1>
-              <p className="text-xl font-medium opacity-90 max-w-lg text-center drop-shadow-md">
-                Organiza tus partidas en segundos con IA y aleatoriedad pura.
-              </p>
             </div>
           </>
         )}
       </div>
 
-      {/* Main Content Area */}
-      <div className="relative z-10 -mt-10">
+      {/* App Core */}
+      <div className="relative z-10 -mt-8 md:-mt-20">
         <CaimaneraRandomizer />
       </div>
 
-      {/* Footer Info */}
-      <footer className="py-12 px-6 border-t mt-12 bg-muted/30">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="space-y-1 text-center md:text-left">
-            <h3 className="font-bold text-primary">Caimanera Randomizer</h3>
-            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} - Hecho para los amantes del fútbol.</p>
-          </div>
-          <div className="flex gap-4">
-            <span className="text-xs bg-accent/10 text-accent px-3 py-1 rounded-full font-semibold">#CaimaneraAI</span>
-            <span className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full font-semibold">#FútbolCallejero</span>
-          </div>
+      {/* Footer minimalista */}
+      <footer className="py-12 px-6 text-center">
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <div className="h-px w-8 bg-border"></div>
+          <Star className="h-4 w-4 text-accent fill-accent animate-pulse" />
+          <div className="h-px w-8 bg-border"></div>
         </div>
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50 italic">
+          Powering amateur matches since {new Date().getFullYear()}
+        </p>
       </footer>
     </main>
   );
 }
+
+import { Crown, Star } from 'lucide-react';
