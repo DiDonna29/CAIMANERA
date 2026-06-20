@@ -3,13 +3,13 @@
     {
       "id": "hero-sports",
       "description": "Epic stadium lights and football field at night",
-      "imageUrl": "https://picsum.photos/seed/caimanera-stadium-pro/1200/600",
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTi76o207OKvbn4mxkRMg4F4JaMibjnTQd3O6fmiwMg5y4LASKIFhf8fkvQ&s=10",
       "imageHint": "soccer field lights"
     },
     {
       "id": "team-spirit",
       "description": "Golden football trophy with lens flare",
-      "imageUrl": "https://picsum.photos/seed/elite-match-final/800/600",
+      "imageUrl": "https://media.quepasa.com.ve/site/wp-content/uploads/2018/04/champions-1200x600.jpg",
       "imageHint": "football trophy"
     }
   ]

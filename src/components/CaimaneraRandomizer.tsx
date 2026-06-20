@@ -82,7 +82,7 @@ export default function CaimaneraRandomizer() {
 
   const perTeam = parseInt(playersPerTeam);
   const isValidCount = players.length > 0 && players.length % perTeam === 0;
-  const maxPlayersAllowed = perTeam * 4; // Máximo 4 equipos para mantener elegancia
+  const maxPlayersAllowed = perTeam * 4;
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -119,7 +119,7 @@ export default function CaimaneraRandomizer() {
       toast({
         variant: "destructive",
         title: "Límite alcanzado",
-        description: `Máximo ${maxPlayersAllowed} jugadores (${maxPlayersAllowed / perTeam} equipos) para este formato.`,
+        description: `Máximo ${maxPlayersAllowed} jugadores para este formato.`,
       });
       return;
     }
@@ -203,8 +203,8 @@ export default function CaimaneraRandomizer() {
       const dataUrl = await toPng(resultsRef.current, {
         cacheBust: true,
         backgroundColor: '#0a192f',
-        style: { padding: '0', borderRadius: '0' },
-        pixelRatio: 2
+        pixelRatio: 2,
+        skipFonts: true // Soluciona errores de CORS con fuentes externas
       });
       const link = document.createElement('a');
       link.download = `Caimanera_Elite_${new Date().getTime()}.png`;
@@ -212,13 +212,14 @@ export default function CaimaneraRandomizer() {
       link.click();
       toast({ title: "Póster descargado", description: "Imagen guardada exitosamente." });
     } catch (err) {
+      console.error(err);
       toast({ variant: "destructive", title: "Error", description: "No se pudo generar la imagen." });
     } finally {
       setIsDownloading(false);
     }
   };
 
-  const copyResultsToClipboard = () => {
+  const copyResultsToClipboard = async () => {
     let text = `🏆 CAIMANERA ELITE 🏆\n\n`;
     if (matchDetails) {
       text += `🔥 PARTIDO ESTELAR:\n${matchDetails.teamA.name} VS ${matchDetails.teamB.name}\n`;
@@ -229,13 +230,22 @@ export default function CaimaneraRandomizer() {
       team.players.forEach((p, i) => text += `${i + 1}. ${p}\n`);
       text += `\n`;
     });
-    navigator.clipboard.writeText(text);
-    toast({ title: "Copiado", description: "Resultados copiados al portapapeles." });
+
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copiado", description: "Resultados copiados al portapapeles." });
+    } catch (err) {
+      console.error("Clipboard error:", err);
+      toast({ 
+        variant: "destructive", 
+        title: "Error de permisos", 
+        description: "El navegador bloqueó el acceso al portapapeles." 
+      });
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-4 md:py-8 space-y-6 min-h-screen pb-24">
-      {/* Navbar Superior */}
       <nav className="flex justify-between items-center bg-card/60 backdrop-blur-xl p-2 rounded-full border border-border/50 sticky top-4 z-50 shadow-lg">
         <div className="flex items-center gap-3 pl-4">
           <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
@@ -258,7 +268,6 @@ export default function CaimaneraRandomizer() {
       </nav>
 
       <div className="relative">
-        {/* PASO 1: FORMATO */}
         {currentStep === 'formato' && (
           <div className="space-y-8 animate-in slide-in-from-bottom-10 fade-in duration-500">
             <div className="text-center space-y-3 pt-6">
@@ -297,7 +306,6 @@ export default function CaimaneraRandomizer() {
           </div>
         )}
 
-        {/* PASO 2: ENTRADA DE TEXTO */}
         {currentStep === 'jugadores' && (
           <div className="space-y-6 animate-in slide-in-from-right-10 fade-in duration-500">
             <div className="flex items-center justify-between pt-6">
@@ -337,7 +345,6 @@ export default function CaimaneraRandomizer() {
           </div>
         )}
 
-        {/* PASO 3: VALIDACIÓN DE CÁPSULAS */}
         {currentStep === 'verificar' && (
           <div className="space-y-6 animate-in zoom-in-95 fade-in duration-500">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-6">
@@ -430,7 +437,6 @@ export default function CaimaneraRandomizer() {
           </div>
         )}
 
-        {/* PASO 4: RESULTADOS */}
         {currentStep === 'resultados' && (
           <div className="space-y-6 animate-in slide-in-from-bottom-10 fade-in duration-700">
             {isGenerating ? (
@@ -488,7 +494,6 @@ export default function CaimaneraRandomizer() {
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-[10px] font-black px-8 py-1.5 italic rounded-b-xl tracking-[0.2em]">PARTIDO ESTELAR</div>
                         
                         <div className="flex items-center justify-between gap-4 md:gap-8 mt-8">
-                          {/* Equipo A */}
                           <div className="flex-1 space-y-4">
                             <div className="h-20 w-20 mx-auto bg-primary/20 rounded-full flex items-center justify-center border border-primary/40">
                               <ShieldCheck className="h-10 w-10 text-primary" />
@@ -496,13 +501,11 @@ export default function CaimaneraRandomizer() {
                             <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamA.name}</span>
                           </div>
 
-                          {/* VS Center - Corregido solapamiento */}
                           <div className="relative w-16 md:w-24 h-16 md:h-24 flex items-center justify-center">
                             <div className="absolute inset-0 bg-white/5 rounded-full blur-md"></div>
                             <span className="text-2xl md:text-3xl font-black text-white/40 italic tracking-tighter relative z-10">VS</span>
                           </div>
 
-                          {/* Equipo B */}
                           <div className="flex-1 space-y-4">
                             <div className="h-20 w-20 mx-auto bg-accent/20 rounded-full flex items-center justify-center border border-accent/40">
                               <ShieldCheck className="h-10 w-10 text-accent" />
