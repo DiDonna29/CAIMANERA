@@ -133,7 +133,6 @@ export default function CaimaneraRandomizer() {
     }
   }, [theme]);
 
-  // Persistir estado completo cada vez que cambie algo relevante
   useEffect(() => {
     if (generatedTeams.length > 0) {
       const state: TournamentState = {
@@ -308,17 +307,31 @@ export default function CaimaneraRandomizer() {
         format: playersPerTeam,
         timestamp: Date.now()
       };
-      const code = btoa(JSON.stringify(state));
-      navigator.clipboard.writeText(code);
-      toast({
-        title: "Código Generado",
-        description: "Código de sincronización copiado al portapapeles. ¡Pásalo a tus amigos!",
+      
+      const jsonString = JSON.stringify(state);
+      // Codificación robusta para UTF-8 en Base64
+      const code = btoa(encodeURIComponent(jsonString).replace(/%([0-9A-F]{2})/g, (match, p1) => 
+        String.fromCharCode(parseInt(p1, 16))
+      ));
+
+      navigator.clipboard.writeText(code).then(() => {
+        toast({
+          title: "Código Generado",
+          description: "Código de sincronización copiado al portapapeles. ¡Pásalo a tus amigos!",
+        });
+      }).catch(() => {
+        toast({
+          variant: "destructive",
+          title: "Error de Portapapeles",
+          description: "No se pudo copiar automáticamente. Intenta de nuevo.",
+        });
       });
     } catch (e) {
+      console.error(e);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudo generar el código.",
+        description: "No se pudo generar el código. Verifica los nombres.",
       });
     }
   };
@@ -326,7 +339,11 @@ export default function CaimaneraRandomizer() {
   const handleImportCode = () => {
     if (!importCode.trim()) return;
     try {
-      const decoded = atob(importCode.trim());
+      // Decodificación robusta para UTF-8 desde Base64
+      const decoded = decodeURIComponent(atob(importCode.trim()).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      
       const state: TournamentState = JSON.parse(decoded);
       
       setGeneratedTeams(state.teams);
@@ -656,7 +673,7 @@ export default function CaimaneraRandomizer() {
                     {/* Partido Estelar */}
                     {matchDetails && (
                       <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 mb-12 text-center relative overflow-hidden">
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-[10px] font-black px-8 py-1.5 italic rounded-b-xl tracking-[0.2em]">PARTIDO ESTELAR</div>
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-[10px] font-black px-8 py-1.5 italic rounded-b-xl tracking-[0.2em] z-20">PARTIDO ESTELAR</div>
                         
                         <div className="flex items-center justify-between gap-4 md:gap-8 mt-8">
                           <div className="flex-1 space-y-4">
@@ -665,13 +682,13 @@ export default function CaimaneraRandomizer() {
                             </div>
                             <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamA.name}</span>
                             <Button size="sm" onClick={() => registerWin(matchDetails.teamA.id)} className="rounded-full font-black italic uppercase text-[9px] bg-primary/20 hover:bg-primary text-primary-foreground border-primary/30 h-10 px-6">
-                              VICTORIA
+                              REGISTRAR VICTORIA
                             </Button>
                           </div>
 
-                          <div className="relative w-16 md:w-24 h-16 md:h-24 flex items-center justify-center">
+                          <div className="relative w-16 md:w-24 h-16 md:h-24 flex items-center justify-center shrink-0">
                             <div className="absolute inset-0 bg-white/5 rounded-full blur-md"></div>
-                            <span className="text-2xl md:text-3xl font-black text-white/40 italic tracking-tighter relative z-10">VS</span>
+                            <span className="text-2xl md:text-3xl font-black text-white/40 italic tracking-tighter relative z-10 leading-none">VS</span>
                           </div>
 
                           <div className="flex-1 space-y-4">
@@ -680,7 +697,7 @@ export default function CaimaneraRandomizer() {
                             </div>
                             <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamB.name}</span>
                             <Button size="sm" onClick={() => registerWin(matchDetails.teamB.id)} className="rounded-full font-black italic uppercase text-[9px] bg-accent/20 hover:bg-accent text-accent-foreground border-accent/30 h-10 px-6">
-                              VICTORIA
+                              REGISTRAR VICTORIA
                             </Button>
                           </div>
                         </div>
