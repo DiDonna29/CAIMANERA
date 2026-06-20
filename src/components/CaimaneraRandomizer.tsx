@@ -26,8 +26,7 @@ import {
   AlertTriangle,
   Copy,
   Medal,
-  TrendingUp,
-  Award
+  TrendingUp
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toPng } from 'html-to-image';
@@ -570,7 +569,7 @@ export default function CaimaneraRandomizer() {
                             </div>
                             <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamA.name}</span>
                             <Button size="sm" onClick={() => registerWin(matchDetails.teamA.id)} className="rounded-full font-black italic uppercase text-[9px] bg-primary/20 hover:bg-primary text-primary-foreground border-primary/30 h-10 px-6">
-                              Registrar Victoria
+                              VICTORIA
                             </Button>
                           </div>
 
@@ -585,7 +584,7 @@ export default function CaimaneraRandomizer() {
                             </div>
                             <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamB.name}</span>
                             <Button size="sm" onClick={() => registerWin(matchDetails.teamB.id)} className="rounded-full font-black italic uppercase text-[9px] bg-accent/20 hover:bg-accent text-accent-foreground border-accent/30 h-10 px-6">
-                              Registrar Victoria
+                              VICTORIA
                             </Button>
                           </div>
                         </div>
@@ -636,9 +635,9 @@ export default function CaimaneraRandomizer() {
                               variant="ghost" 
                               size="sm" 
                               onClick={() => registerWin(team.id)} 
-                              className="w-full rounded-xl font-bold italic uppercase text-[8px] tracking-widest text-primary/60 hover:text-primary hover:bg-primary/10"
+                              className="w-full rounded-full font-black italic uppercase text-[9px] tracking-[0.2em] bg-card/40 backdrop-blur-md border border-white/10 text-primary hover:bg-primary hover:text-white transition-all shadow-md mt-2"
                             >
-                              Registrar Victoria Manual
+                              REGISTRAR VICTORIA
                             </Button>
                           </div>
                         </div>
@@ -647,7 +646,7 @@ export default function CaimaneraRandomizer() {
 
                     {/* Footer Póster con Marca de Agua Mejorada */}
                     <div className="mt-16 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 opacity-50">
-                      <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-none">SISTEMA DE SORTEO ELITE V4.0</span>
+                      <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-none">SISTEMA DE SORTEO ELITE V1.0</span>
                       <div className="flex flex-col items-center md:items-end gap-1 text-center md:text-right">
                         <span className="text-[10px] font-black text-white uppercase tracking-widest block leading-none">
                           DESARROLLADO POR <span className="text-primary text-glow">JOHN DI DONNA</span>
@@ -732,7 +731,7 @@ export default function CaimaneraRandomizer() {
 
                 {/* Footer Reporte con Marca de Agua Mejorada */}
                 <div className="mt-16 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 opacity-50">
-                  <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-none">REPORTE OFICIAL ELITE</span>
+                  <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-none">REPORTE OFICIAL ELITE V1.0</span>
                   <div className="flex flex-col items-center md:items-end gap-1 text-center md:text-right">
                     <span className="text-[10px] font-black text-white uppercase tracking-widest block leading-none">
                       DESARROLLADO POR <span className="text-primary text-glow">JOHN DI DONNA</span>
