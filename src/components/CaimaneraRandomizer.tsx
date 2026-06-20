@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -25,17 +24,22 @@ import {
   Sun,
   Moon,
   AlertTriangle,
-  Copy
+  Copy,
+  Medal,
+  TrendingUp
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toPng } from 'html-to-image';
 import { cn } from '@/lib/utils';
 
+type TeamColor = 'primary' | 'accent' | 'success';
+
 type Team = {
   id: number;
   name: string;
   players: string[];
-  color: 'primary' | 'accent';
+  color: TeamColor;
+  wins: number;
 };
 
 type MatchDetails = {
@@ -45,7 +49,7 @@ type MatchDetails = {
   kickoffTeam: string;
 };
 
-type Step = 'formato' | 'jugadores' | 'verificar' | 'resultados';
+type Step = 'formato' | 'jugadores' | 'verificar' | 'resultados' | 'estadisticas';
 
 const FORMATOS = [
   { id: '2', label: 'Dúos', sub: '2v2', icon: <Users className="h-5 w-5" /> },
@@ -67,6 +71,8 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 export default function CaimaneraRandomizer() {
   const { toast } = useToast();
   const resultsRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  
   const [currentStep, setCurrentStep] = useState<Step>('formato');
   const [playersPerTeam, setPlayersPerTeam] = useState<string>("5");
   const [rosterText, setRosterText] = useState<string>("");
@@ -82,9 +88,24 @@ export default function CaimaneraRandomizer() {
 
   const perTeam = parseInt(playersPerTeam);
   const isValidCount = players.length > 0 && players.length % perTeam === 0;
-  const maxPlayersAllowed = perTeam * 4;
+  const maxTeamsAllowed = 4;
+  const maxPlayersAllowed = perTeam * maxTeamsAllowed;
 
+  // Cargar estadísticas de localStorage al iniciar
   useEffect(() => {
+    const savedTeams = localStorage.getItem('caimanera_tournament_stats');
+    if (savedTeams) {
+      try {
+        const parsed = JSON.parse(savedTeams);
+        // Solo cargar si hay datos válidos
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setGeneratedTeams(parsed);
+        }
+      } catch (e) {
+        console.error("Error al cargar localStorage", e);
+      }
+    }
+
     const root = window.document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
@@ -92,6 +113,13 @@ export default function CaimaneraRandomizer() {
       root.classList.remove('dark');
     }
   }, [theme]);
+
+  // Guardar en localStorage cada vez que cambien los equipos
+  useEffect(() => {
+    if (generatedTeams.length > 0) {
+      localStorage.setItem('caimanera_tournament_stats', JSON.stringify(generatedTeams));
+    }
+  }, [generatedTeams]);
 
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
@@ -119,7 +147,7 @@ export default function CaimaneraRandomizer() {
       toast({
         variant: "destructive",
         title: "Límite alcanzado",
-        description: `Máximo ${maxPlayersAllowed} jugadores para este formato.`,
+        description: `Máximo ${maxPlayersAllowed} jugadores para este formato (4 equipos).`,
       });
       return;
     }
@@ -148,7 +176,7 @@ export default function CaimaneraRandomizer() {
     if (!isValidCount) {
       toast({
         variant: "destructive",
-        title: "Equipos incompletos",
+        title: "Convocatoria incompleta",
         description: `Faltan o sobran jugadores para completar equipos de ${perTeam}.`,
       });
       return;
@@ -158,11 +186,13 @@ export default function CaimaneraRandomizer() {
     setCurrentStep('resultados');
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       const shuffled = shuffleArray(players);
       const numTeams = players.length / perTeam;
       
+      const colors: TeamColor[] = ['primary', 'accent', 'success', 'primary'];
       const teams: Team[] = [];
+      
       for (let i = 0; i < numTeams; i++) {
         const start = i * perTeam;
         const end = start + perTeam;
@@ -171,7 +201,8 @@ export default function CaimaneraRandomizer() {
           id: i + 1,
           name: `EQUIPO ${i + 1}`,
           players: teamPlayers,
-          color: i % 2 === 0 ? 'primary' : 'accent'
+          color: colors[i % colors.length],
+          wins: 0
         });
       }
 
@@ -196,18 +227,41 @@ export default function CaimaneraRandomizer() {
     }
   };
 
-  const handleDownloadImage = async () => {
-    if (!resultsRef.current) return;
+  const registerWin = (teamId: number) => {
+    setGeneratedTeams(prev => prev.map(t => 
+      t.id === teamId ? { ...t, wins: t.wins + 1 } : t
+    ));
+    toast({
+      title: "Victoria Registrada",
+      description: "Las estadísticas del torneo han sido actualizadas.",
+    });
+  };
+
+  const resetTournament = () => {
+    localStorage.removeItem('caimanera_tournament_stats');
+    setGeneratedTeams([]);
+    setMatchDetails(null);
+    setPlayers([]);
+    setRosterText("");
+    setCurrentStep('formato');
+    toast({
+      title: "Torneo Reiniciado",
+      description: "Se han borrado todas las victorias y equipos.",
+    });
+  };
+
+  const handleDownloadImage = async (ref: React.RefObject<HTMLDivElement>, fileName: string) => {
+    if (!ref.current) return;
     setIsDownloading(true);
     try {
-      const dataUrl = await toPng(resultsRef.current, {
+      const dataUrl = await toPng(ref.current, {
         cacheBust: true,
         backgroundColor: '#0a192f',
         pixelRatio: 2,
-        skipFonts: true // Soluciona errores de CORS con fuentes externas
+        skipFonts: true
       });
       const link = document.createElement('a');
-      link.download = `Caimanera_Elite_${new Date().getTime()}.png`;
+      link.download = `${fileName}_${new Date().getTime()}.png`;
       link.href = dataUrl;
       link.click();
       toast({ title: "Póster descargado", description: "Imagen guardada exitosamente." });
@@ -226,7 +280,7 @@ export default function CaimaneraRandomizer() {
       text += `⚽ SAQUE: ${matchDetails.kickoffTeam}\n\n`;
     }
     generatedTeams.forEach(team => {
-      text += `📍 ${team.name}:\n`;
+      text += `📍 ${team.name} (${team.wins} victorias):\n`;
       team.players.forEach((p, i) => text += `${i + 1}. ${p}\n`);
       text += `\n`;
     });
@@ -244,6 +298,8 @@ export default function CaimaneraRandomizer() {
     }
   };
 
+  const sortedTeams = [...generatedTeams].sort((a, b) => b.wins - a.wins);
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-4 md:py-8 space-y-6 min-h-screen pb-24">
       <nav className="flex justify-between items-center bg-card/60 backdrop-blur-xl p-2 rounded-full border border-border/50 sticky top-4 z-50 shadow-lg">
@@ -255,13 +311,14 @@ export default function CaimaneraRandomizer() {
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full h-9 w-9 transition-all hover:bg-primary/10">
             {theme === 'dark' ? <Sun className="h-5 w-5 text-accent" /> : <Moon className="h-5 w-5 text-primary" />}
           </Button>
+          {generatedTeams.length > 0 && (
+            <Button variant="ghost" size="icon" onClick={() => setCurrentStep('estadisticas')} className="rounded-full h-9 w-9 hover:bg-primary/10">
+              <TrendingUp className="h-5 w-5 text-primary" />
+            </Button>
+          )}
           {currentStep !== 'formato' && (
-            <Button variant="ghost" size="icon" onClick={() => {
-              setPlayers([]);
-              setRosterText("");
-              setCurrentStep('formato');
-            }} className="rounded-full h-9 w-9 hover:bg-destructive/10">
-              <RotateCw className="h-5 w-5" />
+            <Button variant="ghost" size="icon" onClick={resetTournament} className="rounded-full h-9 w-9 hover:bg-destructive/10">
+              <Trash2 className="h-5 w-5 text-destructive" />
             </Button>
           )}
         </div>
@@ -459,7 +516,7 @@ export default function CaimaneraRandomizer() {
                     <Button onClick={copyResultsToClipboard} variant="secondary" className="flex-1 md:flex-none rounded-full font-black italic text-xs h-12 px-6 gap-2">
                       <Copy className="h-4 w-4" /> COPIAR TEXTO
                     </Button>
-                    <Button onClick={handleDownloadImage} disabled={isDownloading} className="flex-1 md:flex-none rounded-full bg-primary hover:bg-primary/90 text-white font-black italic text-xs h-12 px-6 gap-2 shadow-lg animate-shine">
+                    <Button onClick={() => handleDownloadImage(resultsRef, 'Caimanera_Elite')} disabled={isDownloading} className="flex-1 md:flex-none rounded-full bg-primary hover:bg-primary/90 text-white font-black italic text-xs h-12 px-6 gap-2 shadow-lg animate-shine">
                       {isDownloading ? <RotateCw className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
                       DESCARGAR PÓSTER
                     </Button>
@@ -499,6 +556,9 @@ export default function CaimaneraRandomizer() {
                               <ShieldCheck className="h-10 w-10 text-primary" />
                             </div>
                             <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamA.name}</span>
+                            <Button size="sm" onClick={() => registerWin(matchDetails.teamA.id)} className="rounded-full font-black italic uppercase text-[9px] bg-primary/20 hover:bg-primary text-primary-foreground">
+                              Registrar Victoria
+                            </Button>
                           </div>
 
                           <div className="relative w-16 md:w-24 h-16 md:h-24 flex items-center justify-center">
@@ -511,6 +571,9 @@ export default function CaimaneraRandomizer() {
                               <ShieldCheck className="h-10 w-10 text-accent" />
                             </div>
                             <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamB.name}</span>
+                            <Button size="sm" onClick={() => registerWin(matchDetails.teamB.id)} className="rounded-full font-black italic uppercase text-[9px] bg-accent/20 hover:bg-accent text-accent-foreground">
+                              Registrar Victoria
+                            </Button>
                           </div>
                         </div>
 
@@ -536,11 +599,15 @@ export default function CaimaneraRandomizer() {
                             <div className="flex items-center gap-3">
                               <div className={cn(
                                 "w-1.5 h-5 rounded-full",
-                                team.color === 'primary' ? "bg-primary" : "bg-accent"
+                                team.color === 'primary' ? "bg-primary" : 
+                                team.color === 'accent' ? "bg-accent" : "bg-success-elite"
                               )}></div>
                               <span className="font-black text-xl text-white italic uppercase tracking-tighter">{team.name}</span>
                             </div>
-                            <Badge variant="outline" className="text-[9px] font-black text-white/30 border-white/10">{team.players.length} CRACKS</Badge>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-[9px] font-black text-white/30 border-white/10">{team.wins} WINS</Badge>
+                              <Badge variant="outline" className="text-[9px] font-black text-white/30 border-white/10">{team.players.length} CRACKS</Badge>
+                            </div>
                           </div>
                           <div className="p-6 space-y-3">
                             {team.players.map((player, pIdx) => (
@@ -575,7 +642,95 @@ export default function CaimaneraRandomizer() {
             )}
           </div>
         )}
+
+        {currentStep === 'estadisticas' && (
+          <div className="space-y-6 animate-in slide-in-from-right-10 fade-in duration-500">
+             <div className="flex flex-col md:flex-row gap-4 items-center justify-between pt-4">
+              <Button variant="outline" onClick={() => setCurrentStep('resultados')} className="rounded-full h-12 px-6 border-border font-bold italic uppercase text-xs">
+                <ChevronLeft className="mr-2 h-4 w-4" /> VOLVER
+              </Button>
+              <Button onClick={() => handleDownloadImage(statsRef, 'Reporte_Torneo_Elite')} disabled={isDownloading} className="w-full md:w-auto rounded-full bg-primary hover:bg-primary/90 text-white font-black italic text-xs h-12 px-6 gap-2 shadow-lg animate-shine">
+                {isDownloading ? <RotateCw className="h-4 w-4 animate-spin" /> : <Medal className="h-4 w-4" />}
+                DESCARGAR REPORTE TOP 3
+              </Button>
+            </div>
+
+            <div 
+              ref={statsRef} 
+              className="champions-gradient p-[1px] rounded-[2.5rem] overflow-hidden shadow-2xl"
+            >
+              <div className="relative bg-[#0a192f] p-8 md:p-12">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 blur-[120px] pointer-events-none"></div>
+                
+                <div className="text-center space-y-4 mb-12 border-b border-white/10 pb-10">
+                  <Trophy className="h-16 w-16 text-accent mx-auto animate-float" />
+                  <h3 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">REPORTE DEL TORNEO</h3>
+                  <p className="text-primary text-[10px] font-black uppercase tracking-[0.5em]">HALL OF FAME ELITE</p>
+                </div>
+
+                <div className="space-y-6">
+                  {sortedTeams.slice(0, 3).map((team, index) => (
+                    <div 
+                      key={team.id} 
+                      className={cn(
+                        "relative flex items-center justify-between p-8 rounded-[2rem] border overflow-hidden",
+                        index === 0 ? "bg-accent/10 border-accent/30 scale-105 z-10" : "bg-white/5 border-white/10"
+                      )}
+                    >
+                      {index === 0 && (
+                        <div className="absolute top-0 right-0 p-4 opacity-20">
+                          <CrownIcon className="h-24 w-24 text-accent" />
+                        </div>
+                      )}
+                      <div className="flex items-center gap-6">
+                        <div className={cn(
+                          "w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black italic",
+                          index === 0 ? "bg-accent text-accent-foreground" : 
+                          index === 1 ? "bg-slate-300 text-slate-800" : "bg-amber-600 text-white"
+                        )}>
+                          #{index + 1}
+                        </div>
+                        <div>
+                          <span className="text-2xl font-black text-white uppercase italic tracking-tighter block">{team.name}</span>
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{team.players.join(", ")}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-4xl font-black text-white italic block leading-none">{team.wins}</span>
+                        <span className="text-[9px] font-black text-accent uppercase tracking-widest">VICTORIAS</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-16 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 opacity-40">
+                  <span className="text-[9px] font-black text-white uppercase tracking-[0.5em] italic">REPORTE OFICIAL ELITE</span>
+                  <div className="text-center md:text-right">
+                    <span className="text-[10px] font-black text-white uppercase tracking-widest block">DESARROLLADO POR <span className="text-primary">JOHN DI DONNA</span></span>
+                    <span className="text-[8px] font-bold text-white/60 uppercase tracking-widest">© TODOS LOS DERECHOS RESERVADOS</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+function CrownIcon({ className }: { className?: string }) {
+  return (
+    <svg 
+      className={className}
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
+      <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14" />
+    </svg>
   );
 }
