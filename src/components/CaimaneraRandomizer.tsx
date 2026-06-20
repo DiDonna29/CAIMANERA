@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -298,7 +297,7 @@ export default function CaimaneraRandomizer() {
     }
   };
 
-  const generateAndCopyCode = () => {
+  const generateAndCopyCode = async () => {
     try {
       const state: TournamentState = {
         teams: generatedTeams,
@@ -309,29 +308,25 @@ export default function CaimaneraRandomizer() {
       };
       
       const jsonString = JSON.stringify(state);
-      // Codificación robusta para UTF-8 en Base64
       const code = btoa(encodeURIComponent(jsonString).replace(/%([0-9A-F]{2})/g, (match, p1) => 
         String.fromCharCode(parseInt(p1, 16))
       ));
 
-      navigator.clipboard.writeText(code).then(() => {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(code);
         toast({
           title: "Código Generado",
           description: "Código de sincronización copiado al portapapeles. ¡Pásalo a tus amigos!",
         });
-      }).catch(() => {
-        toast({
-          variant: "destructive",
-          title: "Error de Portapapeles",
-          description: "No se pudo copiar automáticamente. Intenta de nuevo.",
-        });
-      });
+      } else {
+        throw new Error("Clipboard API no disponible");
+      }
     } catch (e) {
       console.error(e);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudo generar el código. Verifica los nombres.",
+        title: "Error de Sincronización",
+        description: "El navegador bloqueó el acceso al portapapeles. Intenta nuevamente.",
       });
     }
   };
@@ -339,7 +334,6 @@ export default function CaimaneraRandomizer() {
   const handleImportCode = () => {
     if (!importCode.trim()) return;
     try {
-      // Decodificación robusta para UTF-8 desde Base64
       const decoded = decodeURIComponent(atob(importCode.trim()).split('').map(function(c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
       }).join(''));
@@ -380,8 +374,12 @@ export default function CaimaneraRandomizer() {
     });
 
     try {
-      await navigator.clipboard.writeText(text);
-      toast({ title: "Copiado", description: "Resultados copiados al portapapeles." });
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        toast({ title: "Copiado", description: "Resultados copiados al portapapeles." });
+      } else {
+        throw new Error("Clipboard API no disponible");
+      }
     } catch (err) {
       toast({ 
         variant: "destructive", 
