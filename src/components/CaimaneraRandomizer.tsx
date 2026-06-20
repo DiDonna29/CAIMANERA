@@ -16,14 +16,14 @@ import {
   Star,
   ShieldCheck,
   Timer,
-  Sun,
-  Moon,
   Zap,
   UserPlus,
   Trash2,
   Edit2,
   Check,
-  X
+  Sun,
+  Moon,
+  Sword
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toPng } from 'html-to-image';
@@ -190,7 +190,8 @@ export default function CaimaneraRandomizer() {
       const dataUrl = await toPng(resultsRef.current, {
         cacheBust: true,
         backgroundColor: '#0a192f',
-        style: { padding: '0', borderRadius: '0' }
+        style: { padding: '0', borderRadius: '0' },
+        pixelRatio: 2 // Mejora la calidad para pantallas retina/alta densidad
       });
       const link = document.createElement('a');
       link.download = `Caimanera_Elite_${new Date().getTime()}.png`;
@@ -419,73 +420,99 @@ export default function CaimaneraRandomizer() {
                   ref={resultsRef} 
                   className="champions-gradient p-[1px] rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-1000"
                 >
-                  <div className="relative bg-[#0a192f] p-8 md:p-12">
+                  <div className="relative bg-[#0a192f] p-8 md:p-12 min-w-[320px]">
                     {/* Decoraciones del Póster */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-primary/20 blur-[120px] pointer-events-none"></div>
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/10 blur-[100px] pointer-events-none"></div>
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 blur-[120px] pointer-events-none"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/5 blur-[100px] pointer-events-none"></div>
                     
-                    <div className="flex items-center justify-between mb-10 border-b border-white/10 pb-8">
+                    <div className="flex items-center justify-between mb-12 border-b border-white/10 pb-10">
                       <div className="flex items-center gap-4">
-                        <div className="p-2 bg-accent/20 rounded-xl">
-                          <Star className="h-8 w-8 text-accent fill-accent" />
+                        <div className="p-3 bg-accent/20 rounded-2xl">
+                          <Star className="h-10 w-10 text-accent fill-accent" />
                         </div>
                         <div>
-                          <h4 className="font-black text-white text-3xl italic tracking-tighter leading-none uppercase">CAIMANERA ELITE</h4>
-                          <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Official Tournament Draw</span>
+                          <h4 className="font-black text-white text-4xl italic tracking-tighter leading-none uppercase">CAIMANERA ELITE</h4>
+                          <span className="text-[11px] font-black text-primary uppercase tracking-[0.5em] mt-1 block">OFFICIAL SELECTION</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-sm font-black text-white italic opacity-40 uppercase block">
-                          {new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+                        <span className="text-xl font-black text-white italic opacity-50 uppercase block leading-none">
+                          {new Date().getDate()}
+                        </span>
+                        <span className="text-xs font-black text-white italic opacity-30 uppercase block">
+                          {new Date().toLocaleString('es-ES', { month: 'short' }).toUpperCase()}
                         </span>
                       </div>
                     </div>
 
                     {matchDetails && (
-                      <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2rem] p-8 mb-10 text-center relative overflow-hidden match-glow">
-                        <Badge className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-[10px] font-black px-6 py-1 italic rounded-b-xl tracking-widest">MATCH OF THE DAY</Badge>
-                        <div className="flex items-center justify-between gap-6 mt-6">
-                          <div className="flex-1 space-y-4">
-                            <div className="h-16 w-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto border border-primary/30">
-                              <ShieldCheck className="h-10 w-10 text-primary drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                      <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 mb-12 text-center relative overflow-hidden match-glow">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-[11px] font-black px-10 py-2 italic rounded-b-[1.5rem] tracking-[0.2em] shadow-lg shadow-primary/40">FEATURED MATCH</div>
+                        
+                        <div className="flex items-center justify-between gap-4 md:gap-8 mt-8">
+                          {/* Equipo A */}
+                          <div className="flex-1 space-y-6 animate-in slide-in-from-left-8 duration-1000">
+                            <div className="relative inline-block">
+                              <div className="absolute -inset-4 bg-primary/20 blur-2xl rounded-full"></div>
+                              <div className="h-24 w-24 bg-gradient-to-br from-primary/30 to-primary/10 rounded-full flex items-center justify-center border-2 border-primary/40 relative">
+                                <ShieldCheck className="h-14 w-14 text-primary drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]" />
+                              </div>
                             </div>
-                            <span className="text-3xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamA}</span>
+                            <span className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter block leading-none drop-shadow-lg">{matchDetails.teamA}</span>
                           </div>
-                          <div className="text-5xl font-black text-white/20 italic tracking-tighter">VS</div>
-                          <div className="flex-1 space-y-4">
-                            <div className="h-16 w-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto border border-accent/30">
-                              <ShieldCheck className="h-10 w-10 text-accent drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
+
+                          {/* VS Center */}
+                          <div className="relative flex flex-col items-center justify-center">
+                            <span className="text-7xl md:text-9xl font-black text-white/5 italic tracking-tighter absolute select-none">VS</span>
+                            <div className="bg-white/10 p-4 rounded-full border border-white/10 backdrop-blur-md relative z-10">
+                              <span className="text-2xl md:text-3xl font-black text-white/40 italic tracking-tighter">VS</span>
                             </div>
-                            <span className="text-3xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamB}</span>
+                          </div>
+
+                          {/* Equipo B */}
+                          <div className="flex-1 space-y-6 animate-in slide-in-from-right-8 duration-1000">
+                            <div className="relative inline-block">
+                              <div className="absolute -inset-4 bg-accent/20 blur-2xl rounded-full"></div>
+                              <div className="h-24 w-24 bg-gradient-to-br from-accent/30 to-accent/10 rounded-full flex items-center justify-center border-2 border-accent/40 relative">
+                                <ShieldCheck className="h-14 w-14 text-accent drop-shadow-[0_0_15px_rgba(234,179,8,0.8)]" />
+                              </div>
+                            </div>
+                            <span className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter block leading-none drop-shadow-lg">{matchDetails.teamB}</span>
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 mt-10 border-t border-white/5 pt-8 text-xs font-black uppercase italic tracking-widest">
-                          <div className="flex items-center gap-3 justify-center text-accent bg-accent/10 py-3 rounded-xl">
-                            <Timer className="h-4 w-4" /> SAQUE: {matchDetails.kickoffTeam}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-12 border-t border-white/5 pt-10">
+                          <div className="flex items-center gap-4 justify-center text-accent bg-accent/5 py-4 rounded-[1.5rem] border border-accent/10">
+                            <Timer className="h-5 w-5 animate-pulse" />
+                            <span className="text-[11px] font-black uppercase italic tracking-[0.2em]">KICKOFF: {matchDetails.kickoffTeam}</span>
                           </div>
                           {matchDetails.waitingTeam && (
-                            <div className="flex items-center gap-3 justify-center text-primary bg-primary/10 py-3 rounded-xl">
-                              <RotateCw className="h-4 w-4" /> ESPERA: {matchDetails.waitingTeam}
+                            <div className="flex items-center gap-4 justify-center text-primary bg-primary/5 py-4 rounded-[1.5rem] border border-primary/10">
+                              <RotateCw className="h-5 w-5" />
+                              <span className="text-[11px] font-black uppercase italic tracking-[0.2em]">WAITING: {matchDetails.waitingTeam}</span>
                             </div>
                           )}
                         </div>
                       </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {generatedTeams.map((team) => (
-                        <div key={team.id} className="bg-white/5 rounded-[1.5rem] overflow-hidden border border-white/10 group transition-all hover:bg-white/10">
-                          <div className="bg-white/5 px-6 py-4 flex justify-between items-center border-b border-white/5">
-                            <div className="flex items-center gap-3">
-                              <Zap className="h-4 w-4 text-primary fill-primary" />
-                              <span className="font-black text-lg text-white italic uppercase tracking-tighter">{team.name}</span>
+                        <div key={team.id} className="bg-white/5 rounded-[2rem] overflow-hidden border border-white/10 group transition-all hover:bg-white/10">
+                          <div className="bg-white/5 px-8 py-5 flex justify-between items-center border-b border-white/5">
+                            <div className="flex items-center gap-4">
+                              <div className={cn(
+                                "w-2 h-6 rounded-full",
+                                team.id % 2 === 0 ? "bg-accent" : "bg-primary"
+                              )}></div>
+                              <span className="font-black text-xl text-white italic uppercase tracking-tighter">{team.name}</span>
                             </div>
-                            <Badge variant="outline" className="text-[10px] font-black text-white/60 border-white/10">{team.players.length} CRACKS</Badge>
+                            <Badge variant="outline" className="text-[10px] font-black text-white/40 border-white/10 px-3 py-1 uppercase">{team.players.length} CRACKS</Badge>
                           </div>
-                          <div className="p-4 space-y-2">
+                          <div className="p-6 space-y-3">
                             {team.players.map((player, pIdx) => (
-                              <div key={pIdx} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5 text-sm font-black uppercase italic text-white/90 transition-all hover:translate-x-1 hover:bg-white/10">
-                                <span className="text-primary w-5 opacity-40 font-mono text-xs">{String(pIdx + 1).padStart(2, '0')}</span>
+                              <div key={pIdx} className="flex items-center gap-5 p-4 rounded-2xl bg-white/5 border border-white/5 text-sm font-black uppercase italic text-white/80 transition-all hover:translate-x-2 hover:bg-white/10">
+                                <span className="text-primary w-6 opacity-30 font-mono text-xs">{String(pIdx + 1).padStart(2, '0')}</span>
                                 {player}
                               </div>
                             ))}
@@ -494,14 +521,17 @@ export default function CaimaneraRandomizer() {
                       ))}
                     </div>
 
-                    <div className="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 opacity-40">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <span className="text-[9px] font-black text-white uppercase tracking-[0.5em] italic">Elite Matchmaker System v2.0</span>
+                    <div className="mt-16 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 opacity-30">
+                      <div className="flex items-center gap-4">
+                        <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,1)]"></div>
+                        <span className="text-[10px] font-black text-white uppercase tracking-[0.6em] italic">ELITE MATCHMAKER SYSTEM V3.0</span>
                       </div>
-                      <span className="text-[10px] font-black text-white uppercase tracking-widest italic bg-white/5 px-4 py-1 rounded-full">
-                        Desarrollado por John Di Donna
-                      </span>
+                      <div className="flex flex-col items-center md:items-end gap-1">
+                        <span className="text-[11px] font-black text-white uppercase tracking-[0.3em] italic px-6 py-2 rounded-full border border-white/10 bg-white/5">
+                          DESARROLLADO POR <span className="text-primary">JOHN DI DONNA</span>
+                        </span>
+                        <span className="text-[8px] font-bold text-white/60 uppercase tracking-[0.5em] pr-2">© ALL RIGHTS RESERVED</span>
+                      </div>
                     </div>
                   </div>
                 </div>
