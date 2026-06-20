@@ -646,9 +646,9 @@ export default function CaimaneraRandomizer() {
 
                     {/* Footer Póster con Marca de Agua Mejorada */}
                     <div className="mt-16 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 opacity-50">
-                      <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-none">SISTEMA DE SORTEO ELITE V1.0</span>
+                      <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-8">SISTEMA DE SORTEO ELITE V1.0</span>
                       <div className="flex flex-col items-center md:items-end gap-1 text-center md:text-right">
-                        <span className="text-[10px] font-black text-white uppercase tracking-widest block leading-none">
+                        <span className="text-[10px] font-black text-white uppercase tracking-widest block leading-8">
                           DESARROLLADO POR <span className="text-primary text-glow">JOHN DI DONNA</span>
                         </span>
                         <span className="text-[7px] font-bold text-white/60 uppercase tracking-[0.2em] block leading-none mt-1">
@@ -731,9 +731,9 @@ export default function CaimaneraRandomizer() {
 
                 {/* Footer Reporte con Marca de Agua Mejorada */}
                 <div className="mt-16 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 opacity-50">
-                  <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-none">REPORTE OFICIAL ELITE V1.0</span>
+                  <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-8">REPORTE OFICIAL ELITE V1.0</span>
                   <div className="flex flex-col items-center md:items-end gap-1 text-center md:text-right">
-                    <span className="text-[10px] font-black text-white uppercase tracking-widest block leading-none">
+                    <span className="text-[10px] font-black text-white uppercase tracking-widest block leading-8">
                       DESARROLLADO POR <span className="text-primary text-glow">JOHN DI DONNA</span>
                     </span>
                     <span className="text-[7px] font-bold text-white/60 uppercase tracking-[0.2em] block leading-none mt-1">
