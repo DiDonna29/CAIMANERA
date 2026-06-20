@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -26,7 +27,10 @@ import {
   AlertTriangle,
   Copy,
   Medal,
-  TrendingUp
+  TrendingUp,
+  Share2,
+  Search,
+  Download
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toPng } from 'html-to-image';
@@ -47,6 +51,14 @@ type MatchDetails = {
   teamB: Team;
   waitingTeams: Team[];
   kickoffTeam: string;
+};
+
+type TournamentState = {
+  teams: Team[];
+  match: MatchDetails | null;
+  players: string[];
+  format: string;
+  timestamp: number;
 };
 
 type Step = 'formato' | 'jugadores' | 'verificar' | 'resultados' | 'estadisticas';
@@ -86,6 +98,7 @@ export default function CaimaneraRandomizer() {
   const [matchDetails, setMatchDetails] = useState<MatchDetails | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [dateInfo, setDateInfo] = useState<{ day: string, month: string } | null>(null);
+  const [importCode, setImportCode] = useState("");
 
   const perTeam = parseInt(playersPerTeam);
   const isValidCount = players.length > 0 && players.length % perTeam === 0;
@@ -93,13 +106,14 @@ export default function CaimaneraRandomizer() {
   const maxPlayersAllowed = perTeam * maxTeamsAllowed;
 
   useEffect(() => {
-    const savedTeams = localStorage.getItem('caimanera_tournament_stats');
-    if (savedTeams) {
+    const savedStats = localStorage.getItem('caimanera_tournament_full_state');
+    if (savedStats) {
       try {
-        const parsed = JSON.parse(savedTeams);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setGeneratedTeams(parsed);
-        }
+        const parsed: TournamentState = JSON.parse(savedStats);
+        setGeneratedTeams(parsed.teams);
+        setMatchDetails(parsed.match);
+        setPlayers(parsed.players);
+        setPlayersPerTeam(parsed.format);
       } catch (e) {
         console.error("Error al cargar localStorage", e);
       }
@@ -119,11 +133,19 @@ export default function CaimaneraRandomizer() {
     }
   }, [theme]);
 
+  // Persistir estado completo cada vez que cambie algo relevante
   useEffect(() => {
     if (generatedTeams.length > 0) {
-      localStorage.setItem('caimanera_tournament_stats', JSON.stringify(generatedTeams));
+      const state: TournamentState = {
+        teams: generatedTeams,
+        match: matchDetails,
+        players: players,
+        format: playersPerTeam,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('caimanera_tournament_full_state', JSON.stringify(state));
     }
-  }, [generatedTeams]);
+  }, [generatedTeams, matchDetails, players, playersPerTeam]);
 
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
@@ -237,12 +259,12 @@ export default function CaimaneraRandomizer() {
     ));
     toast({
       title: "Victoria Registrada",
-      description: "Las estadísticas del torneo han sido actualizadas.",
+      description: "Las estadísticas del torneo han sido actualizadas localmente.",
     });
   };
 
   const resetTournament = () => {
-    localStorage.removeItem('caimanera_tournament_stats');
+    localStorage.removeItem('caimanera_tournament_full_state');
     setGeneratedTeams([]);
     setMatchDetails(null);
     setPlayers([]);
@@ -277,6 +299,57 @@ export default function CaimaneraRandomizer() {
     }
   };
 
+  const generateAndCopyCode = () => {
+    try {
+      const state: TournamentState = {
+        teams: generatedTeams,
+        match: matchDetails,
+        players: players,
+        format: playersPerTeam,
+        timestamp: Date.now()
+      };
+      const code = btoa(JSON.stringify(state));
+      navigator.clipboard.writeText(code);
+      toast({
+        title: "Código Generado",
+        description: "Código de sincronización copiado al portapapeles. ¡Pásalo a tus amigos!",
+      });
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo generar el código.",
+      });
+    }
+  };
+
+  const handleImportCode = () => {
+    if (!importCode.trim()) return;
+    try {
+      const decoded = atob(importCode.trim());
+      const state: TournamentState = JSON.parse(decoded);
+      
+      setGeneratedTeams(state.teams);
+      setMatchDetails(state.match);
+      setPlayers(state.players);
+      setPlayersPerTeam(state.format);
+      
+      setCurrentStep('resultados');
+      setImportCode("");
+      
+      toast({
+        title: "Torneo Importado",
+        description: "Los equipos y victorias se han cargado correctamente.",
+      });
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        title: "Código Inválido",
+        description: "El código pegado no es correcto o está dañado.",
+      });
+    }
+  };
+
   const copyResultsToClipboard = async () => {
     let text = `🏆 CAIMANERA ELITE 🏆\n\n`;
     if (matchDetails) {
@@ -290,18 +363,13 @@ export default function CaimaneraRandomizer() {
     });
 
     try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        await navigator.clipboard.writeText(text);
-        toast({ title: "Copiado", description: "Resultados copiados al portapapeles." });
-      } else {
-        throw new Error("Clipboard API not available");
-      }
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copiado", description: "Resultados copiados al portapapeles." });
     } catch (err) {
-      console.error("Clipboard error:", err);
       toast({ 
         variant: "destructive", 
         title: "Error de permisos", 
-        description: "El navegador bloqueó el acceso al portapapeles. Intenta copiar manualmente." 
+        description: "El navegador bloqueó el acceso al portapapeles." 
       });
     }
   };
@@ -334,7 +402,7 @@ export default function CaimaneraRandomizer() {
       </nav>
 
       <div className="relative">
-        {/* PASO 1: FORMATO */}
+        {/* PASO 1: FORMATO + IMPORTAR */}
         {currentStep === 'formato' && (
           <div className="space-y-8 animate-in slide-in-from-bottom-10 fade-in duration-500">
             <div className="text-center space-y-3 pt-6">
@@ -370,10 +438,35 @@ export default function CaimaneraRandomizer() {
                 </button>
               ))}
             </div>
+
+            <Card className="bg-card/40 backdrop-blur-md border-border/50 rounded-[2rem] p-8 shadow-xl space-y-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Search className="h-5 w-5 text-primary" />
+                <h3 className="text-sm font-black italic uppercase tracking-widest">CONTINUAR TORNEO</h3>
+              </div>
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest leading-relaxed">
+                Pega el código generado por un amigo para ver el mismo sorteo y compartir victorias.
+              </p>
+              <div className="flex flex-col md:flex-row gap-3">
+                <Input 
+                  placeholder="PEGA EL CÓDIGO AQUÍ..." 
+                  className="bg-background/50 border-border/50 h-12 rounded-xl font-mono text-[10px] tracking-wider"
+                  value={importCode}
+                  onChange={(e) => setImportCode(e.target.value)}
+                />
+                <Button 
+                  onClick={handleImportCode}
+                  disabled={!importCode.trim()}
+                  className="h-12 px-8 bg-primary hover:bg-primary/90 text-white font-black italic uppercase text-xs tracking-widest rounded-xl transition-all"
+                >
+                  SINCRONIZAR
+                </Button>
+              </div>
+            </Card>
           </div>
         )}
 
-        {/* PASO 2: JUGADORES (TEXTAREA) */}
+        {/* PASO 2: JUGADORES */}
         {currentStep === 'jugadores' && (
           <div className="space-y-6 animate-in slide-in-from-right-10 fade-in duration-500">
             <div className="flex items-center justify-between pt-6">
@@ -413,7 +506,7 @@ export default function CaimaneraRandomizer() {
           </div>
         )}
 
-        {/* PASO 3: VERIFICAR (CÁPSULAS) */}
+        {/* PASO 3: VERIFICAR */}
         {currentStep === 'verificar' && (
           <div className="space-y-6 animate-in zoom-in-95 fade-in duration-500">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-6">
@@ -506,7 +599,7 @@ export default function CaimaneraRandomizer() {
           </div>
         )}
 
-        {/* PASO 4: RESULTADOS (DRAW + VICTORIA) */}
+        {/* PASO 4: RESULTADOS */}
         {currentStep === 'resultados' && (
           <div className="space-y-6 animate-in slide-in-from-bottom-10 fade-in duration-700">
             {isGenerating ? (
@@ -521,15 +614,18 @@ export default function CaimaneraRandomizer() {
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="flex flex-col md:flex-row gap-4 items-center justify-between pt-4">
-                  <Button variant="outline" onClick={() => setCurrentStep('verificar')} className="rounded-full h-12 px-6 border-border font-bold italic uppercase text-xs">
-                    <ChevronLeft className="mr-2 h-4 w-4" /> VOLVER
+                <div className="flex flex-col md:flex-row gap-3 items-center justify-between pt-4">
+                  <Button variant="outline" onClick={() => setCurrentStep('formato')} className="rounded-full h-12 px-6 border-border font-bold italic uppercase text-xs w-full md:w-auto">
+                    <ChevronLeft className="mr-2 h-4 w-4" /> INICIO
                   </Button>
-                  <div className="flex gap-2 w-full md:w-auto">
+                  <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                    <Button onClick={generateAndCopyCode} variant="outline" className="flex-1 md:flex-none rounded-full font-black italic text-xs h-12 px-6 gap-2 border-primary/30 text-primary">
+                      <Share2 className="h-4 w-4" /> COMPARTIR CÓDIGO
+                    </Button>
                     <Button onClick={copyResultsToClipboard} variant="secondary" className="flex-1 md:flex-none rounded-full font-black italic text-xs h-12 px-6 gap-2">
                       <Copy className="h-4 w-4" /> COPIAR TEXTO
                     </Button>
-                    <Button onClick={() => handleDownloadImage(resultsRef, 'Caimanera_Elite')} disabled={isDownloading} className="flex-1 md:flex-none rounded-full bg-primary hover:bg-primary/90 text-white font-black italic text-xs h-12 px-6 gap-2 shadow-lg animate-shine">
+                    <Button onClick={() => handleDownloadImage(resultsRef, 'Caimanera_Elite')} disabled={isDownloading} className="w-full md:w-auto rounded-full bg-primary hover:bg-primary/90 text-white font-black italic text-xs h-12 px-6 gap-2 shadow-lg animate-shine">
                       {isDownloading ? <RotateCw className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
                       DESCARGAR PÓSTER
                     </Button>
@@ -557,7 +653,7 @@ export default function CaimaneraRandomizer() {
                       </div>
                     </div>
 
-                    {/* Partido Estelar con botones de VICTORIA */}
+                    {/* Partido Estelar */}
                     {matchDetails && (
                       <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 mb-12 text-center relative overflow-hidden">
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-[10px] font-black px-8 py-1.5 italic rounded-b-xl tracking-[0.2em]">PARTIDO ESTELAR</div>
@@ -619,7 +715,6 @@ export default function CaimaneraRandomizer() {
                             </div>
                             <div className="flex items-center gap-2">
                               <Badge variant="outline" className="text-[9px] font-black text-white/30 border-white/10">{team.wins} WINS</Badge>
-                              <Badge variant="outline" className="text-[9px] font-black text-white/30 border-white/10">{team.players.length} CRACKS</Badge>
                             </div>
                           </div>
                           <div className="p-6 space-y-3">
@@ -644,7 +739,7 @@ export default function CaimaneraRandomizer() {
                       ))}
                     </div>
 
-                    {/* Footer Póster con Marca de Agua Mejorada */}
+                    {/* Footer Póster */}
                     <div className="mt-16 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 opacity-50">
                       <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-8">SISTEMA DE SORTEO ELITE V1.0</span>
                       <div className="flex flex-col items-center md:items-end gap-1 text-center md:text-right">
@@ -658,20 +753,12 @@ export default function CaimaneraRandomizer() {
                     </div>
                   </div>
                 </div>
-
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setCurrentStep('formato')} 
-                  className="w-full text-muted-foreground font-black italic uppercase text-[10px] tracking-[0.4em] mt-10 mb-20"
-                >
-                  <RotateCw className="mr-2 h-4 w-4" /> REINICIAR TODO EL SORTEO
-                </Button>
               </div>
             )}
           </div>
         )}
 
-        {/* PASO 5: ESTADÍSTICAS / TOP 3 */}
+        {/* PASO 5: ESTADÍSTICAS */}
         {currentStep === 'estadisticas' && (
           <div className="space-y-6 animate-in slide-in-from-right-10 fade-in duration-500">
              <div className="flex flex-col md:flex-row gap-4 items-center justify-between pt-4">
@@ -729,7 +816,7 @@ export default function CaimaneraRandomizer() {
                   ))}
                 </div>
 
-                {/* Footer Reporte con Marca de Agua Mejorada */}
+                {/* Footer Reporte */}
                 <div className="mt-16 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 opacity-50">
                   <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-8">REPORTE OFICIAL ELITE V1.0</span>
                   <div className="flex flex-col items-center md:items-end gap-1 text-center md:text-right">
