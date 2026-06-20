@@ -85,19 +85,19 @@ export default function CaimaneraRandomizer() {
   const [generatedTeams, setGeneratedTeams] = useState<Team[]>([]);
   const [matchDetails, setMatchDetails] = useState<MatchDetails | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [dateInfo, setDateInfo] = useState<{ day: string, month: string } | null>(null);
 
   const perTeam = parseInt(playersPerTeam);
   const isValidCount = players.length > 0 && players.length % perTeam === 0;
   const maxTeamsAllowed = 4;
   const maxPlayersAllowed = perTeam * maxTeamsAllowed;
 
-  // Cargar estadísticas de localStorage al iniciar
+  // Cargar estadísticas y configurar tema/fecha al iniciar
   useEffect(() => {
     const savedTeams = localStorage.getItem('caimanera_tournament_stats');
     if (savedTeams) {
       try {
         const parsed = JSON.parse(savedTeams);
-        // Solo cargar si hay datos válidos
         if (Array.isArray(parsed) && parsed.length > 0) {
           setGeneratedTeams(parsed);
         }
@@ -105,6 +105,12 @@ export default function CaimaneraRandomizer() {
         console.error("Error al cargar localStorage", e);
       }
     }
+
+    const now = new Date();
+    setDateInfo({
+      day: now.getDate().toString(),
+      month: now.toLocaleString('es-ES', { month: 'short' }).toUpperCase()
+    });
 
     const root = window.document.documentElement;
     if (theme === 'dark') {
@@ -147,7 +153,7 @@ export default function CaimaneraRandomizer() {
       toast({
         variant: "destructive",
         title: "Límite alcanzado",
-        description: `Máximo ${maxPlayersAllowed} jugadores para este formato (4 equipos).`,
+        description: `Máximo ${maxPlayersAllowed} jugadores para este formato.`,
       });
       return;
     }
@@ -286,14 +292,18 @@ export default function CaimaneraRandomizer() {
     });
 
     try {
-      await navigator.clipboard.writeText(text);
-      toast({ title: "Copiado", description: "Resultados copiados al portapapeles." });
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+        toast({ title: "Copiado", description: "Resultados copiados al portapapeles." });
+      } else {
+        throw new Error("Clipboard API not available");
+      }
     } catch (err) {
       console.error("Clipboard error:", err);
       toast({ 
         variant: "destructive", 
         title: "Error de permisos", 
-        description: "El navegador bloqueó el acceso al portapapeles." 
+        description: "El navegador bloqueó el acceso al portapapeles. Intenta copiar manualmente." 
       });
     }
   };
@@ -523,11 +533,8 @@ export default function CaimaneraRandomizer() {
                   </div>
                 </div>
 
-                <div 
-                  ref={resultsRef} 
-                  className="champions-gradient p-[1px] rounded-[2.5rem] overflow-hidden shadow-2xl"
-                >
-                  <div className="relative bg-[#0a192f] p-8 md:p-12">
+                <div className="champions-gradient p-[1px] rounded-[2.5rem] overflow-hidden shadow-2xl">
+                  <div ref={resultsRef} className="relative bg-[#0a192f] p-8 md:p-12">
                     <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 blur-[120px] pointer-events-none"></div>
                     
                     <div className="flex items-center justify-between mb-12 border-b border-white/10 pb-10">
@@ -539,9 +546,9 @@ export default function CaimaneraRandomizer() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-xl font-black text-white italic opacity-50 uppercase block leading-none">{new Date().getDate()}</span>
+                        <span className="text-xl font-black text-white italic opacity-50 uppercase block leading-none">{dateInfo?.day}</span>
                         <span className="text-xs font-black text-white italic opacity-30 uppercase block">
-                          {new Date().toLocaleString('es-ES', { month: 'short' }).toUpperCase()}
+                          {dateInfo?.month}
                         </span>
                       </div>
                     </div>
@@ -556,7 +563,7 @@ export default function CaimaneraRandomizer() {
                               <ShieldCheck className="h-10 w-10 text-primary" />
                             </div>
                             <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamA.name}</span>
-                            <Button size="sm" onClick={() => registerWin(matchDetails.teamA.id)} className="rounded-full font-black italic uppercase text-[9px] bg-primary/20 hover:bg-primary text-primary-foreground">
+                            <Button size="sm" onClick={() => registerWin(matchDetails.teamA.id)} className="rounded-full font-black italic uppercase text-[9px] bg-primary/20 hover:bg-primary text-primary-foreground border-primary/30 h-10 px-6">
                               Registrar Victoria
                             </Button>
                           </div>
@@ -571,7 +578,7 @@ export default function CaimaneraRandomizer() {
                               <ShieldCheck className="h-10 w-10 text-accent" />
                             </div>
                             <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamB.name}</span>
-                            <Button size="sm" onClick={() => registerWin(matchDetails.teamB.id)} className="rounded-full font-black italic uppercase text-[9px] bg-accent/20 hover:bg-accent text-accent-foreground">
+                            <Button size="sm" onClick={() => registerWin(matchDetails.teamB.id)} className="rounded-full font-black italic uppercase text-[9px] bg-accent/20 hover:bg-accent text-accent-foreground border-accent/30 h-10 px-6">
                               Registrar Victoria
                             </Button>
                           </div>
@@ -617,6 +624,16 @@ export default function CaimaneraRandomizer() {
                               </div>
                             ))}
                           </div>
+                          <div className="px-6 pb-6 text-center">
+                             <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => registerWin(team.id)} 
+                              className="w-full rounded-xl font-bold italic uppercase text-[8px] tracking-widest text-primary/60 hover:text-primary hover:bg-primary/10"
+                            >
+                              Registrar Victoria Manual
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -655,11 +672,8 @@ export default function CaimaneraRandomizer() {
               </Button>
             </div>
 
-            <div 
-              ref={statsRef} 
-              className="champions-gradient p-[1px] rounded-[2.5rem] overflow-hidden shadow-2xl"
-            >
-              <div className="relative bg-[#0a192f] p-8 md:p-12">
+            <div className="champions-gradient p-[1px] rounded-[2.5rem] overflow-hidden shadow-2xl">
+              <div ref={statsRef} className="relative bg-[#0a192f] p-8 md:p-12">
                 <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 blur-[120px] pointer-events-none"></div>
                 
                 <div className="text-center space-y-4 mb-12 border-b border-white/10 pb-10">
