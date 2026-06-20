@@ -326,7 +326,7 @@ export default function CaimaneraRandomizer() {
       toast({
         variant: "destructive",
         title: "Error de Sincronización",
-        description: "El navegador bloqueó el acceso al portapapeles. Intenta nuevamente.",
+        description: "El navegador bloqueó el acceso al portapapeles o el código es muy largo.",
       });
     }
   };
@@ -670,31 +670,39 @@ export default function CaimaneraRandomizer() {
 
                     {/* Partido Estelar */}
                     {matchDetails && (
-                      <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 mb-12 text-center relative overflow-hidden">
+                      <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-6 md:p-10 mb-12 text-center relative overflow-hidden">
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-[10px] font-black px-8 py-1.5 italic rounded-b-xl tracking-[0.2em] z-20">PARTIDO ESTELAR</div>
                         
                         <div className="flex items-center justify-between gap-4 md:gap-8 mt-8">
                           <div className="flex-1 space-y-4">
-                            <div className="h-20 w-20 mx-auto bg-primary/20 rounded-full flex items-center justify-center border border-primary/40">
-                              <ShieldCheck className="h-10 w-10 text-primary" />
+                            <div className="h-16 w-16 md:h-20 md:w-20 mx-auto bg-primary/20 rounded-full flex items-center justify-center border border-primary/40">
+                              <ShieldCheck className="h-8 w-8 md:h-10 md:w-10 text-primary" />
                             </div>
-                            <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamA.name}</span>
-                            <Button size="sm" onClick={() => registerWin(matchDetails.teamA.id)} className="rounded-full font-black italic uppercase text-[9px] bg-primary/20 hover:bg-primary text-primary-foreground border-primary/30 h-10 px-6">
+                            <span className="text-xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamA.name}</span>
+                            <Button 
+                              size="sm" 
+                              onClick={() => registerWin(matchDetails.teamA.id)} 
+                              className="rounded-full font-black italic uppercase text-[8px] md:text-[9px] bg-primary/20 hover:bg-primary text-primary-foreground border-primary/30 h-8 md:h-10 px-4 md:px-6 w-full max-w-[140px] mx-auto"
+                            >
                               REGISTRAR VICTORIA
                             </Button>
                           </div>
 
-                          <div className="relative w-16 md:w-24 h-16 md:h-24 flex items-center justify-center shrink-0">
+                          <div className="relative w-12 md:w-24 h-12 md:h-24 flex items-center justify-center shrink-0">
                             <div className="absolute inset-0 bg-white/5 rounded-full blur-md"></div>
-                            <span className="text-2xl md:text-3xl font-black text-white/40 italic tracking-tighter relative z-10 leading-none">VS</span>
+                            <span className="text-lg md:text-3xl font-black text-white/40 italic tracking-tighter relative z-10 leading-none">VS</span>
                           </div>
 
                           <div className="flex-1 space-y-4">
-                            <div className="h-20 w-20 mx-auto bg-accent/20 rounded-full flex items-center justify-center border border-accent/40">
-                              <ShieldCheck className="h-10 w-10 text-accent" />
+                            <div className="h-16 w-16 md:h-20 md:w-20 mx-auto bg-accent/20 rounded-full flex items-center justify-center border border-accent/40">
+                              <ShieldCheck className="h-8 w-8 md:h-10 md:w-10 text-accent" />
                             </div>
-                            <span className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamB.name}</span>
-                            <Button size="sm" onClick={() => registerWin(matchDetails.teamB.id)} className="rounded-full font-black italic uppercase text-[9px] bg-accent/20 hover:bg-accent text-accent-foreground border-accent/30 h-10 px-6">
+                            <span className="text-xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamB.name}</span>
+                            <Button 
+                              size="sm" 
+                              onClick={() => registerWin(matchDetails.teamB.id)} 
+                              className="rounded-full font-black italic uppercase text-[8px] md:text-[9px] bg-accent/20 hover:bg-accent text-accent-foreground border-accent/30 h-8 md:h-10 px-4 md:px-6 w-full max-w-[140px] mx-auto"
+                            >
                               REGISTRAR VICTORIA
                             </Button>
                           </div>
