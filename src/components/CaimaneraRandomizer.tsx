@@ -26,7 +26,8 @@ import {
   AlertTriangle,
   Copy,
   Medal,
-  TrendingUp
+  TrendingUp,
+  Award
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toPng } from 'html-to-image';
@@ -92,8 +93,8 @@ export default function CaimaneraRandomizer() {
   const maxTeamsAllowed = 4;
   const maxPlayersAllowed = perTeam * maxTeamsAllowed;
 
-  // Cargar estadísticas y configurar tema/fecha al iniciar
   useEffect(() => {
+    // Solo cargar en el cliente para evitar errores de hidratación
     const savedTeams = localStorage.getItem('caimanera_tournament_stats');
     if (savedTeams) {
       try {
@@ -120,7 +121,6 @@ export default function CaimaneraRandomizer() {
     }
   }, [theme]);
 
-  // Guardar en localStorage cada vez que cambien los equipos
   useEffect(() => {
     if (generatedTeams.length > 0) {
       localStorage.setItem('caimanera_tournament_stats', JSON.stringify(generatedTeams));
@@ -312,6 +312,7 @@ export default function CaimaneraRandomizer() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-4 md:py-8 space-y-6 min-h-screen pb-24">
+      {/* Navbar Minimalista */}
       <nav className="flex justify-between items-center bg-card/60 backdrop-blur-xl p-2 rounded-full border border-border/50 sticky top-4 z-50 shadow-lg">
         <div className="flex items-center gap-3 pl-4">
           <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
@@ -335,6 +336,7 @@ export default function CaimaneraRandomizer() {
       </nav>
 
       <div className="relative">
+        {/* PASO 1: FORMATO */}
         {currentStep === 'formato' && (
           <div className="space-y-8 animate-in slide-in-from-bottom-10 fade-in duration-500">
             <div className="text-center space-y-3 pt-6">
@@ -373,6 +375,7 @@ export default function CaimaneraRandomizer() {
           </div>
         )}
 
+        {/* PASO 2: JUGADORES (TEXTAREA) */}
         {currentStep === 'jugadores' && (
           <div className="space-y-6 animate-in slide-in-from-right-10 fade-in duration-500">
             <div className="flex items-center justify-between pt-6">
@@ -412,6 +415,7 @@ export default function CaimaneraRandomizer() {
           </div>
         )}
 
+        {/* PASO 3: VERIFICAR (CÁPSULAS) */}
         {currentStep === 'verificar' && (
           <div className="space-y-6 animate-in zoom-in-95 fade-in duration-500">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-6">
@@ -504,6 +508,7 @@ export default function CaimaneraRandomizer() {
           </div>
         )}
 
+        {/* PASO 4: RESULTADOS (DRAW + VICTORIA) */}
         {currentStep === 'resultados' && (
           <div className="space-y-6 animate-in slide-in-from-bottom-10 fade-in duration-700">
             {isGenerating ? (
@@ -537,6 +542,7 @@ export default function CaimaneraRandomizer() {
                   <div ref={resultsRef} className="relative bg-[#0a192f] p-8 md:p-12">
                     <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 blur-[120px] pointer-events-none"></div>
                     
+                    {/* Header Póster */}
                     <div className="flex items-center justify-between mb-12 border-b border-white/10 pb-10">
                       <div className="flex items-center gap-4">
                         <Star className="h-10 w-10 text-accent fill-accent" />
@@ -553,6 +559,7 @@ export default function CaimaneraRandomizer() {
                       </div>
                     </div>
 
+                    {/* Partido Estelar con botones de VICTORIA */}
                     {matchDetails && (
                       <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 mb-12 text-center relative overflow-hidden">
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-[10px] font-black px-8 py-1.5 italic rounded-b-xl tracking-[0.2em]">PARTIDO ESTELAR</div>
@@ -599,6 +606,7 @@ export default function CaimaneraRandomizer() {
                       </div>
                     )}
 
+                    {/* Lista de Equipos */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {generatedTeams.map((team) => (
                         <div key={team.id} className="bg-white/5 rounded-[2rem] overflow-hidden border border-white/10">
@@ -638,6 +646,7 @@ export default function CaimaneraRandomizer() {
                       ))}
                     </div>
 
+                    {/* Footer Póster con Marca de Agua */}
                     <div className="mt-16 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 opacity-40">
                       <span className="text-[9px] font-black text-white uppercase tracking-[0.5em] italic">SISTEMA DE SORTEO ELITE V4.0</span>
                       <div className="text-center md:text-right">
@@ -660,6 +669,7 @@ export default function CaimaneraRandomizer() {
           </div>
         )}
 
+        {/* PASO 5: ESTADÍSTICAS / TOP 3 */}
         {currentStep === 'estadisticas' && (
           <div className="space-y-6 animate-in slide-in-from-right-10 fade-in duration-500">
              <div className="flex flex-col md:flex-row gap-4 items-center justify-between pt-4">
