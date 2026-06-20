@@ -94,7 +94,6 @@ export default function CaimaneraRandomizer() {
   const maxPlayersAllowed = perTeam * maxTeamsAllowed;
 
   useEffect(() => {
-    // Solo cargar en el cliente para evitar errores de hidratación
     const savedTeams = localStorage.getItem('caimanera_tournament_stats');
     if (savedTeams) {
       try {
@@ -646,12 +645,16 @@ export default function CaimaneraRandomizer() {
                       ))}
                     </div>
 
-                    {/* Footer Póster con Marca de Agua */}
-                    <div className="mt-16 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 opacity-40">
-                      <span className="text-[9px] font-black text-white uppercase tracking-[0.5em] italic">SISTEMA DE SORTEO ELITE V4.0</span>
-                      <div className="text-center md:text-right">
-                        <span className="text-[10px] font-black text-white uppercase tracking-widest block">DESARROLLADO POR <span className="text-primary">JOHN DI DONNA</span></span>
-                        <span className="text-[8px] font-bold text-white/60 uppercase tracking-widest">© TODOS LOS DERECHOS RESERVADOS</span>
+                    {/* Footer Póster con Marca de Agua Mejorada */}
+                    <div className="mt-16 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 opacity-50">
+                      <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-none">SISTEMA DE SORTEO ELITE V4.0</span>
+                      <div className="flex flex-col items-center md:items-end gap-1 text-center md:text-right">
+                        <span className="text-[10px] font-black text-white uppercase tracking-widest block leading-none">
+                          DESARROLLADO POR <span className="text-primary text-glow">JOHN DI DONNA</span>
+                        </span>
+                        <span className="text-[7px] font-bold text-white/60 uppercase tracking-[0.2em] block leading-none mt-1">
+                          © TODOS LOS DERECHOS RESERVADOS
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -727,11 +730,16 @@ export default function CaimaneraRandomizer() {
                   ))}
                 </div>
 
-                <div className="mt-16 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 opacity-40">
-                  <span className="text-[9px] font-black text-white uppercase tracking-[0.5em] italic">REPORTE OFICIAL ELITE</span>
-                  <div className="text-center md:text-right">
-                    <span className="text-[10px] font-black text-white uppercase tracking-widest block">DESARROLLADO POR <span className="text-primary">JOHN DI DONNA</span></span>
-                    <span className="text-[8px] font-bold text-white/60 uppercase tracking-widest">© TODOS LOS DERECHOS RESERVADOS</span>
+                {/* Footer Reporte con Marca de Agua Mejorada */}
+                <div className="mt-16 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 opacity-50">
+                  <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-none">REPORTE OFICIAL ELITE</span>
+                  <div className="flex flex-col items-center md:items-end gap-1 text-center md:text-right">
+                    <span className="text-[10px] font-black text-white uppercase tracking-widest block leading-none">
+                      DESARROLLADO POR <span className="text-primary text-glow">JOHN DI DONNA</span>
+                    </span>
+                    <span className="text-[7px] font-bold text-white/60 uppercase tracking-[0.2em] block leading-none mt-1">
+                      © TODOS LOS DERECHOS RESERVADOS
+                    </span>
                   </div>
                 </div>
               </div>

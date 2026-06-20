@@ -45,22 +45,22 @@ export default function Home() {
       </div>
 
       {/* Footer minimalista con créditos */}
-      <footer className="py-12 px-6 text-center relative z-10">
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <div className="h-px w-8 bg-border"></div>
-          <Star className="h-4 w-4 text-accent fill-accent animate-pulse" />
-          <div className="h-px w-8 bg-border"></div>
+      <footer className="py-16 px-6 text-center relative z-10 border-t border-border/10">
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+          <Star className="h-5 w-5 text-accent fill-accent animate-pulse" />
+          <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
         </div>
-        <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50 italic">
-            Powering amateur matches since {new Date().getFullYear()}
+        <div className="space-y-4">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-60 italic">
+            Potenciando el fútbol amateur desde {new Date().getFullYear()}
           </p>
-          <div className="flex flex-col items-center gap-1">
-            <p className="text-[11px] font-black text-primary/80 uppercase tracking-tighter italic">
-              Desarrollado por <span className="text-foreground">John Di Donna</span>
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-[12px] font-black text-white uppercase tracking-tighter italic">
+              Desarrollado por <span className="text-primary text-glow">JOHN DI DONNA</span>
             </p>
             <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-[0.3em] opacity-40">
-              © All Rights Reserved
+              © All Rights Reserved • Elite Tournament System
             </p>
           </div>
         </div>
