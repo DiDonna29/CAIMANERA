@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,11 +29,12 @@ import {
   TrendingUp,
   Share2,
   Search,
-  Download
+  Link2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toPng } from 'html-to-image';
 import { cn } from '@/lib/utils';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 type TeamColor = 'primary' | 'accent' | 'success';
 
@@ -79,8 +80,19 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return result;
 };
 
+// Componente envoltorio para manejar SearchParams de forma segura en Next.js
 export default function CaimaneraRandomizer() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen"><RotateCw className="animate-spin h-10 w-10 text-primary" /></div>}>
+      <CaimaneraCore />
+    </Suspense>
+  );
+}
+
+function CaimaneraCore() {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const resultsRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   
@@ -104,7 +116,19 @@ export default function CaimaneraRandomizer() {
   const maxTeamsAllowed = 4;
   const maxPlayersAllowed = perTeam * maxTeamsAllowed;
 
+  // Carga inicial y persistencia
   useEffect(() => {
+    // 1. Verificar si hay un torneo en la URL
+    const sharedData = searchParams.get('t');
+    if (sharedData) {
+      handleImportProcess(sharedData, true);
+      // Limpiar URL para evitar recargas accidentales
+      const newPath = window.location.pathname;
+      router.replace(newPath);
+      return;
+    }
+
+    // 2. Si no hay en URL, cargar de LocalStorage
     const savedStats = localStorage.getItem('caimanera_tournament_full_state');
     if (savedStats) {
       try {
@@ -113,6 +137,7 @@ export default function CaimaneraRandomizer() {
         setMatchDetails(parsed.match);
         setPlayers(parsed.players);
         setPlayersPerTeam(parsed.format);
+        if (parsed.teams.length > 0) setCurrentStep('resultados');
       } catch (e) {
         console.error("Error al cargar localStorage", e);
       }
@@ -130,8 +155,9 @@ export default function CaimaneraRandomizer() {
     } else {
       root.classList.remove('dark');
     }
-  }, [theme]);
+  }, []);
 
+  // Guardar cambios en LocalStorage
   useEffect(() => {
     if (generatedTeams.length > 0) {
       const state: TournamentState = {
@@ -257,7 +283,7 @@ export default function CaimaneraRandomizer() {
     ));
     toast({
       title: "Victoria Registrada",
-      description: "Las estadísticas del torneo han sido actualizadas localmente.",
+      description: "Las estadísticas del torneo han sido actualizadas.",
     });
   };
 
@@ -285,56 +311,67 @@ export default function CaimaneraRandomizer() {
         skipFonts: true
       });
       const link = document.createElement('a');
-      link.download = `${fileName}_${new Date().getTime()}.png`;
+      link.download = `${fileName}_V1.png`;
       link.href = dataUrl;
       link.click();
       toast({ title: "Póster descargado", description: "Imagen guardada exitosamente." });
     } catch (err) {
-      console.error(err);
       toast({ variant: "destructive", title: "Error", description: "No se pudo generar la imagen." });
     } finally {
       setIsDownloading(false);
     }
   };
 
-  const generateAndCopyCode = async () => {
-    try {
-      const state: TournamentState = {
-        teams: generatedTeams,
-        match: matchDetails,
-        players: players,
-        format: playersPerTeam,
-        timestamp: Date.now()
-      };
-      
-      const jsonString = JSON.stringify(state);
-      const code = btoa(encodeURIComponent(jsonString).replace(/%([0-9A-F]{2})/g, (match, p1) => 
-        String.fromCharCode(parseInt(p1, 16))
-      ));
+  const encodeState = () => {
+    const state: TournamentState = {
+      teams: generatedTeams,
+      match: matchDetails,
+      players: players,
+      format: playersPerTeam,
+      timestamp: Date.now()
+    };
+    const jsonString = JSON.stringify(state);
+    return btoa(encodeURIComponent(jsonString).replace(/%([0-9A-F]{2})/g, (match, p1) => 
+      String.fromCharCode(parseInt(p1, 16))
+    ));
+  };
 
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(code);
+  const handleShareLink = async () => {
+    try {
+      const code = encodeState();
+      const shareUrl = `${window.location.origin}${window.location.pathname}?t=${code}`;
+      
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
         toast({
-          title: "Código Generado",
-          description: "Código de sincronización copiado al portapapeles. ¡Pásalo a tus amigos!",
+          title: "¡LINK Copiado!",
+          description: "Envía este enlace para que otros vean este torneo directamente.",
         });
-      } else {
-        throw new Error("Clipboard API no disponible");
       }
     } catch (e) {
-      console.error(e);
-      toast({
-        variant: "destructive",
-        title: "Error de Sincronización",
-        description: "El navegador bloqueó el acceso al portapapeles o el código es muy largo.",
-      });
+      toast({ variant: "destructive", title: "Error", description: "No se pudo generar el enlace." });
     }
   };
 
-  const handleImportCode = () => {
-    if (!importCode.trim()) return;
+  const handleShareCode = async () => {
     try {
-      const decoded = decodeURIComponent(atob(importCode.trim()).split('').map(function(c) {
+      const code = encodeState();
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(code);
+        toast({
+          title: "Código Copiado",
+          description: "Código de sincronización copiado al portapapeles.",
+        });
+      }
+    } catch (e) {
+      toast({ variant: "destructive", title: "Error", description: "No se pudo generar el código." });
+    }
+  };
+
+  const handleImportProcess = (code: string, isFromUrl = false) => {
+    if (!code.trim()) return;
+    try {
+      const decoded = decodeURIComponent(atob(code.trim()).split('').map(function(c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
       }).join(''));
       
@@ -344,20 +381,20 @@ export default function CaimaneraRandomizer() {
       setMatchDetails(state.match);
       setPlayers(state.players);
       setPlayersPerTeam(state.format);
-      
       setCurrentStep('resultados');
-      setImportCode("");
       
       toast({
-        title: "Torneo Importado",
-        description: "Los equipos y victorias se han cargado correctamente.",
+        title: isFromUrl ? "Torneo Cargado" : "Torneo Importado",
+        description: "Los datos se han sincronizado correctamente.",
       });
     } catch (e) {
-      toast({
-        variant: "destructive",
-        title: "Código Inválido",
-        description: "El código pegado no es correcto o está dañado.",
-      });
+      if (!isFromUrl) {
+        toast({
+          variant: "destructive",
+          title: "Código Inválido",
+          description: "El código pegado no es correcto.",
+        });
+      }
     }
   };
 
@@ -374,18 +411,12 @@ export default function CaimaneraRandomizer() {
     });
 
     try {
-      if (navigator.clipboard && window.isSecureContext) {
+      if (navigator.clipboard) {
         await navigator.clipboard.writeText(text);
         toast({ title: "Copiado", description: "Resultados copiados al portapapeles." });
-      } else {
-        throw new Error("Clipboard API no disponible");
       }
     } catch (err) {
-      toast({ 
-        variant: "destructive", 
-        title: "Error de permisos", 
-        description: "El navegador bloqueó el acceso al portapapeles." 
-      });
+      toast({ variant: "destructive", title: "Error", description: "El navegador bloqueó el acceso al portapapeles." });
     }
   };
 
@@ -470,7 +501,7 @@ export default function CaimaneraRandomizer() {
                   onChange={(e) => setImportCode(e.target.value)}
                 />
                 <Button 
-                  onClick={handleImportCode}
+                  onClick={() => handleImportProcess(importCode)}
                   disabled={!importCode.trim()}
                   className="h-12 px-8 bg-primary hover:bg-primary/90 text-white font-black italic uppercase text-xs tracking-widest rounded-xl transition-all"
                 >
@@ -629,18 +660,23 @@ export default function CaimaneraRandomizer() {
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="flex flex-col md:flex-row gap-3 items-center justify-between pt-4">
-                  <Button variant="outline" onClick={() => setCurrentStep('formato')} className="rounded-full h-12 px-6 border-border font-bold italic uppercase text-xs w-full md:w-auto">
-                    <ChevronLeft className="mr-2 h-4 w-4" /> INICIO
-                  </Button>
-                  <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                    <Button onClick={generateAndCopyCode} variant="outline" className="flex-1 md:flex-none rounded-full font-black italic text-xs h-12 px-6 gap-2 border-primary/30 text-primary">
-                      <Share2 className="h-4 w-4" /> COMPARTIR CÓDIGO
+                <div className="flex flex-col gap-4 items-center justify-between pt-4">
+                   <div className="flex flex-wrap gap-2 w-full">
+                    <Button variant="outline" onClick={() => setCurrentStep('formato')} className="flex-1 rounded-full h-12 border-border font-bold italic uppercase text-xs">
+                      <ChevronLeft className="mr-2 h-4 w-4" /> INICIO
                     </Button>
-                    <Button onClick={copyResultsToClipboard} variant="secondary" className="flex-1 md:flex-none rounded-full font-black italic text-xs h-12 px-6 gap-2">
-                      <Copy className="h-4 w-4" /> COPIAR TEXTO
+                    <Button onClick={handleShareLink} variant="default" className="flex-[2] rounded-full h-12 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary font-black italic text-xs gap-2">
+                      <Link2 className="h-4 w-4" /> COPIAR LINK DIRECTO
                     </Button>
-                    <Button onClick={() => handleDownloadImage(resultsRef, 'Caimanera_Elite')} disabled={isDownloading} className="w-full md:w-auto rounded-full bg-primary hover:bg-primary/90 text-white font-black italic text-xs h-12 px-6 gap-2 shadow-lg animate-shine">
+                  </div>
+                  <div className="flex flex-wrap gap-2 w-full">
+                    <Button onClick={handleShareCode} variant="outline" className="flex-1 rounded-full font-black italic text-xs h-12 gap-2 border-primary/30 text-primary">
+                      <Share2 className="h-4 w-4" /> CÓDIGO
+                    </Button>
+                    <Button onClick={copyResultsToClipboard} variant="secondary" className="flex-1 rounded-full font-black italic text-xs h-12 gap-2">
+                      <Copy className="h-4 w-4" /> TEXTO
+                    </Button>
+                    <Button onClick={() => handleDownloadImage(resultsRef, 'Caimanera_Elite')} disabled={isDownloading} className="flex-[1.5] rounded-full bg-primary hover:bg-primary/90 text-white font-black italic text-xs h-12 gap-2 shadow-lg animate-shine">
                       {isDownloading ? <RotateCw className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
                       DESCARGAR PÓSTER
                     </Button>
@@ -648,21 +684,21 @@ export default function CaimaneraRandomizer() {
                 </div>
 
                 <div className="champions-gradient p-[1px] rounded-[2.5rem] overflow-hidden shadow-2xl">
-                  <div ref={resultsRef} className="relative bg-[#0a192f] p-8 md:p-12">
+                  <div ref={resultsRef} className="relative bg-[#0a192f] p-6 md:p-12">
                     <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 blur-[120px] pointer-events-none"></div>
                     
                     {/* Header Póster */}
-                    <div className="flex items-center justify-between mb-12 border-b border-white/10 pb-10">
-                      <div className="flex items-center gap-4">
-                        <Star className="h-10 w-10 text-accent fill-accent" />
+                    <div className="flex items-center justify-between mb-8 md:mb-12 border-b border-white/10 pb-8 md:pb-10">
+                      <div className="flex items-center gap-3 md:gap-4">
+                        <Star className="h-8 w-8 md:h-10 md:w-10 text-accent fill-accent" />
                         <div>
-                          <h4 className="font-black text-white text-3xl italic tracking-tighter leading-none uppercase">CAIMANERA ELITE</h4>
-                          <span className="text-[10px] font-black text-primary uppercase tracking-[0.5em] mt-1 block">TORNEO OFICIAL</span>
+                          <h4 className="font-black text-white text-xl md:text-3xl italic tracking-tighter leading-none uppercase">CAIMANERA ELITE</h4>
+                          <span className="text-[8px] md:text-[10px] font-black text-primary uppercase tracking-[0.4em] md:tracking-[0.5em] mt-1 block">TORNEO OFICIAL</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-xl font-black text-white italic opacity-50 uppercase block leading-none">{dateInfo?.day}</span>
-                        <span className="text-xs font-black text-white italic opacity-30 uppercase block">
+                        <span className="text-lg md:text-xl font-black text-white italic opacity-50 uppercase block leading-none">{dateInfo?.day}</span>
+                        <span className="text-[10px] md:text-xs font-black text-white italic opacity-30 uppercase block">
                           {dateInfo?.month}
                         </span>
                       </div>
@@ -670,53 +706,52 @@ export default function CaimaneraRandomizer() {
 
                     {/* Partido Estelar */}
                     {matchDetails && (
-                      <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-6 md:p-10 mb-12 text-center relative overflow-hidden">
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-[10px] font-black px-8 py-1.5 italic rounded-b-xl tracking-[0.2em] z-20">PARTIDO ESTELAR</div>
+                      <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 mb-8 md:mb-12 text-center relative overflow-hidden">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-[8px] md:text-[10px] font-black px-6 md:px-8 py-1 italic rounded-b-xl tracking-[0.2em] z-20">PARTIDO ESTELAR</div>
                         
-                        <div className="flex items-center justify-between gap-4 md:gap-8 mt-8">
-                          <div className="flex-1 space-y-4">
-                            <div className="h-16 w-16 md:h-20 md:w-20 mx-auto bg-primary/20 rounded-full flex items-center justify-center border border-primary/40">
-                              <ShieldCheck className="h-8 w-8 md:h-10 md:w-10 text-primary" />
+                        <div className="flex items-center justify-between gap-2 md:gap-8 mt-6 md:mt-8">
+                          <div className="flex-1 space-y-3 md:space-y-4">
+                            <div className="h-12 w-12 md:h-20 md:w-20 mx-auto bg-primary/20 rounded-full flex items-center justify-center border border-primary/40">
+                              <ShieldCheck className="h-6 w-6 md:h-10 md:w-10 text-primary" />
                             </div>
-                            <span className="text-xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamA.name}</span>
+                            <span className="text-sm md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none truncate max-w-[100px] md:max-w-none mx-auto">{matchDetails.teamA.name}</span>
                             <Button 
                               size="sm" 
                               onClick={() => registerWin(matchDetails.teamA.id)} 
-                              className="rounded-full font-black italic uppercase text-[8px] md:text-[9px] bg-primary/20 hover:bg-primary text-primary-foreground border-primary/30 h-8 md:h-10 px-4 md:px-6 w-full max-w-[140px] mx-auto"
+                              className="rounded-full font-black italic uppercase text-[7px] md:text-[10px] bg-white/5 hover:bg-primary text-primary-foreground border border-white/10 h-8 md:h-10 px-2 md:px-6 w-full max-w-[120px] mx-auto shadow-sm"
                             >
                               REGISTRAR VICTORIA
                             </Button>
                           </div>
 
-                          <div className="relative w-12 md:w-24 h-12 md:h-24 flex items-center justify-center shrink-0">
-                            <div className="absolute inset-0 bg-white/5 rounded-full blur-md"></div>
-                            <span className="text-lg md:text-3xl font-black text-white/40 italic tracking-tighter relative z-10 leading-none">VS</span>
+                          <div className="relative w-8 md:w-24 h-8 md:h-24 flex items-center justify-center shrink-0">
+                            <span className="text-sm md:text-3xl font-black text-white/20 italic tracking-tighter leading-none">VS</span>
                           </div>
 
-                          <div className="flex-1 space-y-4">
-                            <div className="h-16 w-16 md:h-20 md:w-20 mx-auto bg-accent/20 rounded-full flex items-center justify-center border border-accent/40">
-                              <ShieldCheck className="h-8 w-8 md:h-10 md:w-10 text-accent" />
+                          <div className="flex-1 space-y-3 md:space-y-4">
+                            <div className="h-12 w-12 md:h-20 md:w-20 mx-auto bg-accent/20 rounded-full flex items-center justify-center border border-accent/40">
+                              <ShieldCheck className="h-6 w-6 md:h-10 md:w-10 text-accent" />
                             </div>
-                            <span className="text-xl md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none">{matchDetails.teamB.name}</span>
+                            <span className="text-sm md:text-4xl font-black text-white uppercase italic tracking-tighter block leading-none truncate max-w-[100px] md:max-w-none mx-auto">{matchDetails.teamB.name}</span>
                             <Button 
                               size="sm" 
                               onClick={() => registerWin(matchDetails.teamB.id)} 
-                              className="rounded-full font-black italic uppercase text-[8px] md:text-[9px] bg-accent/20 hover:bg-accent text-accent-foreground border-accent/30 h-8 md:h-10 px-4 md:px-6 w-full max-w-[140px] mx-auto"
+                              className="rounded-full font-black italic uppercase text-[7px] md:text-[10px] bg-white/5 hover:bg-accent text-accent-foreground border border-white/10 h-8 md:h-10 px-2 md:px-6 w-full max-w-[120px] mx-auto shadow-sm"
                             >
                               REGISTRAR VICTORIA
                             </Button>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-12 pt-10 border-t border-white/5">
-                          <div className="flex items-center gap-3 justify-center text-accent">
-                            <Timer className="h-4 w-4" />
-                            <span className="text-[10px] font-black uppercase italic tracking-widest">SAQUE: {matchDetails.kickoffTeam}</span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-8 md:mt-12 pt-6 md:pt-10 border-t border-white/5">
+                          <div className="flex items-center gap-2 justify-center text-accent">
+                            <Timer className="h-3 w-3 md:h-4 md:w-4" />
+                            <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest">SAQUE: {matchDetails.kickoffTeam}</span>
                           </div>
                           {matchDetails.waitingTeams.length > 0 && (
-                            <div className="flex items-center gap-3 justify-center text-primary/60">
-                              <RotateCw className="h-4 w-4" />
-                              <span className="text-[10px] font-black uppercase italic tracking-widest">ESPERA: {matchDetails.waitingTeams.map(t => t.name).join(", ")}</span>
+                            <div className="flex items-center gap-2 justify-center text-primary/60">
+                              <RotateCw className="h-3 w-3 md:h-4 md:w-4" />
+                              <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest">ESPERA: {matchDetails.waitingTeams.map(t => t.name).join(", ")}</span>
                             </div>
                           )}
                         </div>
@@ -724,36 +759,36 @@ export default function CaimaneraRandomizer() {
                     )}
 
                     {/* Lista de Equipos */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                       {generatedTeams.map((team) => (
-                        <div key={team.id} className="bg-white/5 rounded-[2rem] overflow-hidden border border-white/10">
-                          <div className="bg-white/5 px-8 py-5 flex justify-between items-center border-b border-white/5">
-                            <div className="flex items-center gap-3">
+                        <div key={team.id} className="bg-white/5 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border border-white/10">
+                          <div className="bg-white/5 px-6 md:px-8 py-3 md:py-5 flex justify-between items-center border-b border-white/5">
+                            <div className="flex items-center gap-2 md:gap-3">
                               <div className={cn(
-                                "w-1.5 h-5 rounded-full",
+                                "w-1 md:w-1.5 h-4 md:h-5 rounded-full",
                                 team.color === 'primary' ? "bg-primary" : 
                                 team.color === 'accent' ? "bg-accent" : "bg-success-elite"
                               )}></div>
-                              <span className="font-black text-xl text-white italic uppercase tracking-tighter">{team.name}</span>
+                              <span className="font-black text-sm md:text-xl text-white italic uppercase tracking-tighter">{team.name}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-[9px] font-black text-white/30 border-white/10">{team.wins} WINS</Badge>
+                              <Badge variant="outline" className="text-[7px] md:text-[9px] font-black text-white/30 border-white/10">{team.wins} WINS</Badge>
                             </div>
                           </div>
-                          <div className="p-6 space-y-3">
+                          <div className="p-4 md:p-6 space-y-2 md:space-y-3">
                             {team.players.map((player, pIdx) => (
-                              <div key={pIdx} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5 text-xs font-black uppercase italic text-white/80">
-                                <span className="text-primary w-4 opacity-30">{pIdx + 1}</span>
+                              <div key={pIdx} className="flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-lg md:rounded-xl bg-white/5 border border-white/5 text-[10px] md:text-xs font-black uppercase italic text-white/80">
+                                <span className="text-primary w-3 md:w-4 opacity-30">{pIdx + 1}</span>
                                 {player}
                               </div>
                             ))}
                           </div>
-                          <div className="px-6 pb-6 text-center">
+                          <div className="px-4 md:px-6 pb-4 md:pb-6 text-center">
                              <Button 
                               variant="ghost" 
                               size="sm" 
                               onClick={() => registerWin(team.id)} 
-                              className="w-full rounded-full font-black italic uppercase text-[9px] tracking-[0.2em] bg-card/40 backdrop-blur-md border border-white/10 text-primary hover:bg-primary hover:text-white transition-all shadow-md mt-2"
+                              className="w-full rounded-full font-black italic uppercase text-[8px] md:text-[10px] tracking-[0.1em] md:tracking-[0.2em] bg-card/40 backdrop-blur-md border border-white/10 text-primary hover:bg-primary hover:text-white transition-all shadow-md mt-1 md:mt-2"
                             >
                               REGISTRAR VICTORIA
                             </Button>
@@ -763,13 +798,13 @@ export default function CaimaneraRandomizer() {
                     </div>
 
                     {/* Footer Póster */}
-                    <div className="mt-16 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 opacity-50">
-                      <span className="text-[9px] font-black text-white uppercase tracking-[0.4em] italic leading-8">SISTEMA DE SORTEO ELITE V1.0</span>
+                    <div className="mt-12 md:mt-16 pt-8 md:pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 opacity-50">
+                      <span className="text-[7px] md:text-[9px] font-black text-white uppercase tracking-[0.3em] md:tracking-[0.4em] italic leading-8">SISTEMA DE SORTEO ELITE V1.0</span>
                       <div className="flex flex-col items-center md:items-end gap-1 text-center md:text-right">
-                        <span className="text-[10px] font-black text-white uppercase tracking-widest block leading-8">
+                        <span className="text-[8px] md:text-[10px] font-black text-white uppercase tracking-widest block leading-8">
                           DESARROLLADO POR <span className="text-primary text-glow">JOHN DI DONNA</span>
                         </span>
-                        <span className="text-[7px] font-bold text-white/60 uppercase tracking-[0.2em] block leading-none mt-1">
+                        <span className="text-[6px] md:text-[7px] font-bold text-white/60 uppercase tracking-[0.2em] block leading-none mt-1">
                           © TODOS LOS DERECHOS RESERVADOS
                         </span>
                       </div>
@@ -785,7 +820,7 @@ export default function CaimaneraRandomizer() {
         {currentStep === 'estadisticas' && (
           <div className="space-y-6 animate-in slide-in-from-right-10 fade-in duration-500">
              <div className="flex flex-col md:flex-row gap-4 items-center justify-between pt-4">
-              <Button variant="outline" onClick={() => setCurrentStep('resultados')} className="rounded-full h-12 px-6 border-border font-bold italic uppercase text-xs">
+              <Button variant="outline" onClick={() => setCurrentStep('resultados')} className="rounded-full h-12 px-6 border-border font-bold italic uppercase text-xs w-full md:w-auto">
                 <ChevronLeft className="mr-2 h-4 w-4" /> VOLVER
               </Button>
               <Button onClick={() => handleDownloadImage(statsRef, 'Reporte_Torneo_Elite')} disabled={isDownloading} className="w-full md:w-auto rounded-full bg-primary hover:bg-primary/90 text-white font-black italic text-xs h-12 px-6 gap-2 shadow-lg animate-shine">
